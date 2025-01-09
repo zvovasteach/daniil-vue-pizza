@@ -1,10 +1,11 @@
 <template>
-  <AppHeader />
-  <HomeView />
+  <AppLayout>
+    <HomeView />
+  </AppLayout>
 </template>
 
 <script setup>
-import AppHeader from '@/layouts/AppHeader.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import HomeView from '@/views/HomeView.vue';
 </script>
 

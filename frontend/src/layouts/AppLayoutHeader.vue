@@ -1,7 +1,3 @@
-<script setup>
-
-</script>
-
 <template>
   <header class="header">
     <div class="header__logo">
@@ -22,6 +18,10 @@
     </div>
   </header>
 </template>
+
+<script setup>
+
+</script>
 
 <style scoped lang="scss">
 @use "@/assets/scss/ds-system/ds-colors";

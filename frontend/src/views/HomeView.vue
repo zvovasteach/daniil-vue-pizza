@@ -10,14 +10,14 @@
 
             <div class="sheet__content dough">
               <label
-                v-for="dough in doughs"
+                v-for="dough in doughItems"
                 :key="dough.id"
-                :class="`dough__input dough__input--${DOUGH_TYPE[dough.id]}`"
+                :class="`dough__input dough__input--${dough.value}`"
               >
                 <input
                   type="radio"
                   name="dough"
-                  :value="DOUGH_TYPE[dough.id]"
+                  :value="dough.value"
                   class="visually-hidden"
                   checked
                 />
@@ -34,14 +34,14 @@
 
             <div class="sheet__content diameter">
               <label
-                v-for="size in sizes"
+                v-for="size in sizeItems"
                 :key="size.id"
-                :class="`diameter__input diameter__input--${SIZE_TYPE[size.id]}`"
+                :class="`diameter__input diameter__input--${size.value}`"
               >
                 <input
                   type="radio"
                   name="diameter"
-                  :value="SIZE_TYPE[size.id]"
+                  :value="size.value"
                   class="visually-hidden"
                 />
                 <span>{{ size.name }}</span>
@@ -59,14 +59,14 @@
                 <p>Основной соус:</p>
 
                 <label
-                  v-for="sauce in sauces"
+                  v-for="sauce in sauceItems"
                   :key="sauce.id"
                   class="radio ingredients__input"
                 >
                   <input
                     type="radio"
                     name="sauce"
-                    :value="SAUCE_TYPE[sauce.id]"
+                    :value="sauce.value"
                     checked
                   />
                   <span>{{ sauce.name }}</span>
@@ -78,12 +78,12 @@
 
                 <ul class="ingredients__list">
                   <li
-                    v-for="ingredient in ingredients"
+                    v-for="ingredient in ingredientItems"
                     :key="ingredient.id"
                     class="ingredients__item"
                   >
                     <span
-                      :class="`filling filling--${INGREDIENT_TYPE[ingredient.id]}`"
+                      :class="`filling filling--${ingredient.value}`"
                     >{{ ingredient.name }}</span>
 
                     <div class="counter counter--orange ingredients__counter">
@@ -138,15 +138,26 @@
 </template>
 
 <script setup>
-import doughs from '../mocks/dough.json';
-import DOUGH_TYPE from '@/common/enums/dough-type';
-import SIZE_TYPE from '@/common/enums/size-type';
-import SAUCE_TYPE from '@/common/enums/sauce-type';
-import INGREDIENT_TYPE from '@/common/enums/ingredient-type';
-import ingredients from '../mocks/ingredients.json';
+import doughJSON from '../mocks/dough.json';
+import ingredientsJSON from '../mocks/ingredients.json';
 // import misc from '../mocks/misc.json';
-import sauces from '../mocks/sauces.json';
-import sizes from '../mocks/sizes.json';
+import saucesJSON from '../mocks/sauces.json';
+import sizesJSON from '../mocks/sizes.json';
+
+import {
+  normalizeDough,
+  normalizeIngredients,
+  normalizeSauces,
+  normalizeSize,
+} from '@/common/helpers/normalize';
+
+const doughItems = doughJSON.map(normalizeDough);
+const ingredientItems = ingredientsJSON.map(normalizeIngredients);
+const sauceItems = saucesJSON.map(normalizeSauces);
+const sizeItems = sizesJSON.map(normalizeSize);
+
+const getImage = (image) => new URL(`../assets/img/${image}`, import.meta.url).href;
+// https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url
 </script>
 
 <style scoped lang="scss">
