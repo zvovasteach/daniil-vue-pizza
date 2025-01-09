@@ -156,7 +156,7 @@ const ingredientItems = ingredientsJSON.map(normalizeIngredients);
 const sauceItems = saucesJSON.map(normalizeSauces);
 const sizeItems = sizesJSON.map(normalizeSize);
 
-const getImage = (image) => new URL(`../assets/img/${image}`, import.meta.url).href;
+// const getImage = (image) => new URL(`../assets/img/${image}`, import.meta.url).href;
 // https://vitejs.dev/guide/assets.html#new-url-url-import-meta-url
 </script>
 
