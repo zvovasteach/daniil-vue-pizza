@@ -1,6 +1,37 @@
-@use "../ds-system/ds-colors";
-@use "../ds-system/ds-typography";
+<template>
+  <label class="input">
+    <span :class="[{'visually-hidden' : hidden}, {'button--big-label': bigLabel}]">{{ label }}</span>
+    <input
+      v-bind="$attrs"
+      type="text"
+    />
+  </label>
+</template>
 
+<script setup>
+defineOptions({
+  inheritAttrs: false,
+});
+defineProps({
+  label: {
+    type: String,
+    required: true,
+  },
+  hidden: {
+    type: Boolean,
+    default: false,
+  },
+  bigLabel: {
+    type: Boolean,
+    default: false,
+  },
+});
+</script>
+
+<style scoped lang="scss">
+@use "@/assets/scss/ds-system/ds-colors";
+@use "@/assets/scss/ds-system/ds-typography";
+//input styles
 .input {
   display: block;
 
@@ -57,3 +88,4 @@
   }
 }
 
+</style>
