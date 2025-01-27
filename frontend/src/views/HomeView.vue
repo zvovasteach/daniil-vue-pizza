@@ -38,7 +38,6 @@
           <div class="content__result">
             <p>Итого: {{ pizzaPrice }} ₽</p>
             <AppButton
-              :outlined="!textValue"
               :disabled="!textValue"
             >
               Готовьте!
