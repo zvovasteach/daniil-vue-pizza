@@ -53,6 +53,7 @@
 import { MAX_FILLING_COUNT, MIN_FILLING_COUNT } from '@/common/constants';
 import AppDrag from '@/common/components/AppDrag.vue';
 import cloneDeep from 'lodash-es/cloneDeep';
+
 defineProps({
   ingredientsFilling: {
     type: Object,

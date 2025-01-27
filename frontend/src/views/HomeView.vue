@@ -38,7 +38,7 @@
           <div class="content__result">
             <p>Итого: {{ pizzaPrice }} ₽</p>
             <AppButton
-              outlined
+              :outlined="!textValue"
               :disabled="!textValue"
             >
               Готовьте!
@@ -64,6 +64,7 @@ import ingredientsJSON from '@/mocks/ingredients.json';
 import { normalizeIngredients, normalizeSauces, normalizeSize, normalizeDough } from '@/common/helpers/normalize';
 import AppButton from '@/common/components/AppButton.vue';
 import AppInput from '@/common/components/AppInput.vue';
+
 const textValue = ref('');
 const doughItems = doughJSON.map(normalizeDough);
 

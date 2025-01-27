@@ -19,6 +19,7 @@
 <script setup>
 import AppDrop from '@/common/components/AppDrop.vue';
 import { MAX_FILLING_COUNT } from '@/common/constants';
+
 defineProps({
   sauce: {
     type: Object,
