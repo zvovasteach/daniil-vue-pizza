@@ -10,7 +10,9 @@
         <AppDrag :transfer-data="ingredient.value">
           <span
             :class="`filling filling--${ingredient.value}`"
-          >{{ ingredient.name }}</span>
+          >
+            {{ ingredient.name }}
+          </span>
         </AppDrag>
         <div class="counter counter--orange ingredients__counter">
           <button
@@ -22,15 +24,21 @@
             <span class="visually-hidden">Меньше</span>
           </button>
           <input
-            v-model="fillingItems[ingredient.value].count"
-            type="text"
+            type="number"
             name="counter"
             class="counter__input"
+            :value="fillingItems[ingredient.value].count"
+            min="0"
+            max="3"
+            step="1"
+            pattern="[0-3]{1}"
+            size="1"
+            @input="inputValidation(ingredient.value, $event.target.value)"
           />
           <button
             type="button"
             class="counter__button counter__button--plus"
-            :disabled="fillingItems[ingredient.value].count === 3"
+            :disabled="fillingItems[ingredient.value].count === MAX_FILLING_COUNT"
             @click="fillingItems[ingredient.value].count++"
           >
             <span class="visually-hidden">Больше</span>
@@ -42,7 +50,9 @@
 </template>
 
 <script setup>
+import { MAX_FILLING_COUNT, MIN_FILLING_COUNT } from '@/common/constants';
 import AppDrag from '@/common/components/AppDrag.vue';
+import cloneDeep from 'lodash-es/cloneDeep';
 defineProps({
   ingredientsFilling: {
     type: Object,
@@ -50,6 +60,23 @@ defineProps({
   },
 });
 const fillingItems = defineModel({ type: Object });
+const inputValidation = (name, value) => {
+  const newValue = Number(value);
+
+  if (newValue > MAX_FILLING_COUNT) {
+    const result = cloneDeep(fillingItems.value);
+    result[name].count = MAX_FILLING_COUNT;
+    fillingItems.value = result;
+  } else if (newValue < MIN_FILLING_COUNT) {
+    const result = cloneDeep(fillingItems.value);
+    result[name].count = MIN_FILLING_COUNT;
+    fillingItems.value = result;
+  } else {
+    const result = cloneDeep(fillingItems.value);
+    result[name].count = newValue;
+    fillingItems.value = result;
+  }
+};
 
 </script>
 
@@ -346,5 +373,12 @@ const fillingItems = defineModel({ type: Object });
   &:focus {
     box-shadow: inset ds-shadows.$shadow-regular;
   }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  appearance: textfield;
 }
 </style>

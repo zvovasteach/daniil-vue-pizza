@@ -3,6 +3,7 @@
     <span :class="[{'visually-hidden' : hidden}, {'button--big-label': bigLabel}]">{{ label }}</span>
     <input
       v-bind="$attrs"
+      v-model="textValue"
       type="text"
     />
   </label>
@@ -26,6 +27,7 @@ defineProps({
     default: false,
   },
 });
+const textValue = defineModel({ type: String, default: '' });
 </script>
 
 <style scoped lang="scss">

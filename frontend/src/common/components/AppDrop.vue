@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { DATA_TRANSFER_PAYLOAD } from '@/common/enums/constants';
+import { DATA_TRANSFER_PAYLOAD } from '@/common/constants';
 
 const emit = defineEmits(['drop']);
 

@@ -1,41 +1,25 @@
 <template>
-  <div class="content__pizza">
-    <AppInput
-      label="Название пиццы"
-      placeholder="Введите название пиццы"
-      name="pizza-name"
-      hidden
-    />
-    <!--Пример пиццы на картинке с добавленными ингридиентами-->
-    <AppDrop @drop="increaseCount">
-      <div class="content__constructor">
-        <div
-          :class="`pizza pizza--foundation--${dough.value}-${sauce.value}`"
-        >
-          <div class="pizza__wrapper">
-            <div
-              v-for="(value, key) in selectedItems"
-              :key="key"
-              :class="['pizza__filling', `pizza__filling--${key}`, {'pizza__filling--second' : value.count === 2}, {'pizza__filling--third' : value.count === 3}]"
-            ></div>
-          </div>
+  <AppDrop @drop="increaseCount">
+    <div class="content__constructor">
+      <div
+        :class="`pizza pizza--foundation--${dough.value}-${sauce.value}`"
+      >
+        <div class="pizza__wrapper">
+          <div
+            v-for="(value, key) in selectedItems"
+            :key="key"
+            :class="['pizza__filling', `pizza__filling--${key}`, {'pizza__filling--second' : value.count === 2}, {'pizza__filling--third' : value.count === 3}]"
+          ></div>
         </div>
       </div>
-    </AppDrop>
-    <div class="content__result">
-      <p>Итого: {{ getPrice }} ₽</p>
-      <AppButton outlined disabled>Готовьте!</AppButton>
     </div>
-  </div>
+  </AppDrop>
 </template>
 
 <script setup>
-
 import AppDrop from '@/common/components/AppDrop.vue';
-import { computed } from 'vue';
-import AppInput from '@/common/components/AppInput.vue';
-import AppButton from '@/common/components/AppButton.vue';
-const props = defineProps({
+import { MAX_FILLING_COUNT } from '@/common/constants';
+defineProps({
   sauce: {
     type: Object,
     required: true,
@@ -48,26 +32,14 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  selectedItems: {
+    type: Object,
+    required: true,
+  },
 });
 const fillingItems = defineModel({ type: Object });
-const selectedItems = computed(() =>
-  Object.entries(fillingItems.value).reduce((acc, [key, value]) => {
-    if (value.count) {
-      acc[key] = value;
-    }
-    return acc;
-  }, {}));
-const getPrice = computed(() => {
-  const fillingPrice
-    = Object.values(selectedItems.value).reduce((acc, value) => {
-      acc += value.count * value.price;
-      return acc;
-    }, 0);
-  return props.size.multiplier
-    * (fillingPrice + props.dough.price + props.sauce.price);
-});
 const increaseCount = (ingredientItem) => {
-  if (fillingItems.value[ingredientItem].count < 3) {
+  if (fillingItems.value[ingredientItem].count < MAX_FILLING_COUNT) {
     fillingItems.value[ingredientItem].count++;
   }
 };

@@ -19,48 +19,62 @@
             </div>
           </div>
         </div>
-        <PizzaPreview
-          v-model="fillingItems"
-          :sauce="selectedSauce"
-          :dough="selectedDough"
-          :size="selectedSize"
-          :ingredients-filling="ingredientsFilling"
-        />
+        <div class="content__pizza">
+          <AppInput
+            v-model="textValue"
+            label="Название пиццы"
+            placeholder="Введите название пиццы"
+            name="pizza-name"
+            hidden
+          />
+          <PizzaPreview
+            v-model="fillingItems"
+            :sauce="selectedSauce"
+            :dough="selectedDough"
+            :size="selectedSize"
+            :ingredients-filling="ingredientsFilling"
+            :selected-items="selectedItems"
+          />
+          <div class="content__result">
+            <p>Итого: {{ pizzaPrice }} ₽</p>
+            <AppButton
+              outlined
+              :disabled="!textValue"
+            >
+              Готовьте!
+            </AppButton>
+          </div>
+        </div>
       </div>
     </form>
   </main>
 </template>
 
 <script setup>
-
-import { ref } from 'vue';
-
-import DoughType from '@/modules/DoughType/components/DoughType.vue';
-import DoughSize from '@/modules/DoughSize/components/DoughSize.vue';
-import DoughSauce from '@/modules/DoughSauce/components/DoughSauce.vue';
-import DoughFilling from '@/modules/DoughFilling/components/DoughFilling.vue';
-import PizzaPreview from '@/modules/PizzaPreview/components/PizzaPreview.vue';
-
+import { computed, ref } from 'vue';
+import DoughType from '@/modules/Constructor/ConstructorDoughType.vue';
+import DoughSize from '@/modules/Constructor/ConstructorDoughSize.vue';
+import DoughSauce from '@/modules/Constructor/ConstructorDoughSauce.vue';
+import DoughFilling from '@/modules/Constructor/ConstructorDoughFilling.vue';
+import PizzaPreview from '@/modules/Constructor/ConstructorPizzaPreview.vue';
 import doughJSON from '@/mocks/dough.json';
-import {
-  normalizeDough,
-} from '@/common/helpers/normalize';
+import saucesJSON from '@/mocks/sauces.json';
+import sizesJSON from '@/mocks/sizes.json';
+import ingredientsJSON from '@/mocks/ingredients.json';
+import { normalizeIngredients, normalizeSauces, normalizeSize, normalizeDough } from '@/common/helpers/normalize';
+import AppButton from '@/common/components/AppButton.vue';
+import AppInput from '@/common/components/AppInput.vue';
+const textValue = ref('');
 const doughItems = doughJSON.map(normalizeDough);
 
-import saucesJSON from '@/mocks/sauces.json';
-import { normalizeSauces } from '@/common/helpers/normalize';
 const sauceItems = saucesJSON.map(normalizeSauces);
 
-import { normalizeSize } from '@/common/helpers/normalize';
-import sizesJSON from '@/mocks/sizes.json';
 const sizeItems = sizesJSON.map(normalizeSize);
 
 const selectedSauce = ref(sauceItems[0]);
 const selectedDough = ref(doughItems[0]);
 const selectedSize = ref(sizeItems[0]);
 
-import ingredientsJSON from '@/mocks/ingredients.json';
-import { normalizeIngredients } from '@/common/helpers/normalize';
 const ingredientsFilling = ingredientsJSON.map(normalizeIngredients);
 
 const fillingItems = ref(
@@ -72,6 +86,24 @@ const fillingItems = ref(
     return acc;
   }, {}),
 );
+
+const selectedItems = computed(() =>
+  Object.entries(fillingItems.value).reduce((acc, [key, value]) => {
+    if (value.count) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {}));
+
+const pizzaPrice = computed(() => {
+  const fillingPrice
+    = Object.values(selectedItems.value).reduce((acc, value) => {
+      acc += value.count * value.price;
+      return acc;
+    }, 0);
+  return selectedSize.value.multiplier
+    * (fillingPrice + selectedDough.value.price + selectedSauce.value.price);
+});
 </script>
 
 <style scoped lang="scss">
