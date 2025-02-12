@@ -13,7 +13,7 @@
             <div class="sheet__content ingredients">
               <DoughSauce v-model="selectedSauce" :sauce-items="sauceItems" />
               <DoughFilling
-                v-model="fillingItems"
+                v-model:filling-items="fillingItems"
                 :ingredients-filling="ingredientsFilling"
               />
             </div>
@@ -21,10 +21,10 @@
         </div>
         <div class="content__pizza">
           <AppInput
-            v-model="textValue"
+            v-model="pizzaName"
             label="Название пиццы"
             placeholder="Введите название пиццы"
-            name="pizza-name"
+            input-name="pizza-name"
             hidden
           />
           <PizzaPreview
@@ -38,7 +38,8 @@
           <div class="content__result">
             <p>Итого: {{ pizzaPrice }} ₽</p>
             <AppButton
-              :disabled="!textValue"
+              :disabled="!pizzaName"
+              @click="getPizzaInformation"
             >
               Готовьте!
             </AppButton>
@@ -63,8 +64,8 @@ import ingredientsJSON from '@/mocks/ingredients.json';
 import { normalizeIngredients, normalizeSauces, normalizeSize, normalizeDough } from '@/common/helpers/normalize';
 import AppButton from '@/common/components/AppButton.vue';
 import AppInput from '@/common/components/AppInput.vue';
+import { uniqueId } from 'lodash-es/util';
 
-const textValue = ref('');
 const doughItems = doughJSON.map(normalizeDough);
 
 const sauceItems = saucesJSON.map(normalizeSauces);
@@ -74,6 +75,7 @@ const sizeItems = sizesJSON.map(normalizeSize);
 const selectedSauce = ref(sauceItems[0]);
 const selectedDough = ref(doughItems[0]);
 const selectedSize = ref(sizeItems[0]);
+const pizzaName = ref('');
 
 const ingredientsFilling = ingredientsJSON.map(normalizeIngredients);
 
@@ -82,6 +84,7 @@ const fillingItems = ref(
     acc[curr.value] = {
       count: 0,
       price: curr.price,
+      id: curr.id,
     };
     return acc;
   }, {}),
@@ -104,6 +107,25 @@ const pizzaPrice = computed(() => {
   return selectedSize.value.multiplier
     * (fillingPrice + selectedDough.value.price + selectedSauce.value.price);
 });
+const getPizzaInformation = () => {
+  const pizza = {
+    name: pizzaName.value,
+    sauceId: selectedSauce.value.id,
+    doughId: selectedDough.value.id,
+    sizeId: selectedSize.value.id,
+    quantity: 0,
+    ingredients: Object.values(selectedItems.value).map((item) => (
+      {
+        ingredientId: item.id,
+        quantity: item.count,
+      })),
+    price: `${pizzaPrice.value} ₽`,
+    id: uniqueId(),
+  };
+  console.log(pizza);
+  return pizza;
+};
+
 </script>
 
 <style scoped lang="scss">
@@ -112,6 +134,7 @@ const pizzaPrice = computed(() => {
 @use "@/assets/scss/ds-system/ds-typography";
 @use "@/assets/scss/mixins/m_clear-list";
 @use "@/assets/scss/mixins/m_center";
+
 //main styles
 .main {
   display: flex;
@@ -228,22 +251,6 @@ const pizzaPrice = computed(() => {
   button {
     margin-left: 12px;
     padding: 16px 45px;
-  }
-}
-//title styles
-.title {
-  box-sizing: border-box;
-  width: 100%;
-  margin: 0;
-
-  color: ds-colors.$black;
-
-  &--big {
-    @include ds-typography.b-s36-h42;
-  }
-
-  &--small {
-    @include ds-typography.b-s18-h21;
   }
 }
 </style>

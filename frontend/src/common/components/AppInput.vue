@@ -3,9 +3,16 @@
     <span :class="[{'visually-hidden' : hidden}, {'button--big-label': bigLabel}]">{{ label }}</span>
     <input
       v-bind="$attrs"
-      v-model="textValue"
+      v-model="inputModel"
       type="text"
+      :name="inputName"
     />
+    <span
+      v-if="error"
+      class="text-field__error"
+    >
+      {{ error }}
+    </span>
   </label>
 </template>
 
@@ -26,13 +33,22 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  inputName: {
+    type: String,
+    required: true,
+  },
+  error: {
+    type: String,
+    default: '',
+  },
 });
-const textValue = defineModel({ type: String, default: '' });
+const inputModel = defineModel({ type: String, default: '' });
 </script>
 
 <style scoped lang="scss">
 @use "@/assets/scss/ds-system/ds-colors";
 @use "@/assets/scss/ds-system/ds-typography";
+
 //input styles
 .input {
   display: block;
@@ -89,5 +105,12 @@ const textValue = defineModel({ type: String, default: '' });
     }
   }
 }
-
+.text-field__error {
+  color: red;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  position: absolute;
+  width: 230px;
+}
 </style>

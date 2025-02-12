@@ -1,4 +1,4 @@
-import doughSizes from '@/common/data/dough-sizes';
+import doughSizes from '@/common/data/dough-type';
 import ingredients from '@/common/data/ingredients.js';
 import sauces from '@/common/data/sauces.js';
 import sizes from '@/common/data/sizes.js';
@@ -21,4 +21,13 @@ export const normalizeIngredients = (ingredient) => ({
 export const normalizeSauces = (sauce) => ({
   ...sauce,
   value: sauces[sauce.id],
+});
+
+export const normalizePizzas = (pizza) => ({
+  ...pizza,
+});
+
+export const normalizeMisc = (misc) => ({
+  ...misc,
+  quantity: 0,
 });
