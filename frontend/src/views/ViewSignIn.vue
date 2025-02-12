@@ -69,6 +69,7 @@ const validateLogin = () => {
     email: validations.value.email,
     password: validations.value.password,
   })) {
+    // eslint-disable-next-line no-console
     console.log(loginData.value);
   }
 };

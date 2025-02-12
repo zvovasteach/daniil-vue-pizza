@@ -155,6 +155,7 @@ const getOrderData = () => {
   if (formData.value.orderType === '2') {
     orderData.address = formData.value.address;
   }
+  // eslint-disable-next-line no-console
   console.log(orderData);
 };
 

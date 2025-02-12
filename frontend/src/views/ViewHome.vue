@@ -122,6 +122,7 @@ const getPizzaInformation = () => {
     price: `${pizzaPrice.value} ₽`,
     id: uniqueId(),
   };
+  // eslint-disable-next-line no-console
   console.log(pizza);
   return pizza;
 };

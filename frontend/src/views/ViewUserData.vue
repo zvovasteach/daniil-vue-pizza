@@ -80,6 +80,7 @@ const validateUserForm = () => {
     addressStreet: validations.value.addressStreet,
     name: validations.value.name,
   })) {
+    // eslint-disable-next-line no-console
     console.log(userFormAddress.value);
   }
 };
