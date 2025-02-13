@@ -1,8 +1,12 @@
 export const MOVE = 'move';
 export const DATA_TRANSFER_PAYLOAD = 'payload';
 export const MAX_FILLING_COUNT = 3;
-export const MIN_FILLING_COUNT = 0;
-export const RoutName = {
+export const orderType = {
+  BY_YOURSELF: '1',
+  NEW_ADDRESS: '2',
+  HOME: '3',
+};
+export const RouteName = {
   HOME: 'home',
   CART: 'cart',
   ORDERS: 'orders',

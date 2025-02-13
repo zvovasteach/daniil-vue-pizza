@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { MAX_FILLING_COUNT, MIN_FILLING_COUNT } from '@/common/constants';
+import { MAX_FILLING_COUNT } from '@/common/constants';
 import AppDrag from '@/common/components/AppDrag.vue';
 import AppCounter from '@/common/components/AppCounter.vue';
 
@@ -51,9 +51,9 @@ const inputValidation = async (name, value) => {
       ...props.fillingItems,
       [name]: result,
     });
-  } else if (newValue < MIN_FILLING_COUNT) {
+  } else if (newValue < 0) {
     const result = { ...props.fillingItems[name] };
-    result.count = MIN_FILLING_COUNT;
+    result.count = 0;
     emit('update:fillingItems', {
       ...props.fillingItems,
       [name]: result,

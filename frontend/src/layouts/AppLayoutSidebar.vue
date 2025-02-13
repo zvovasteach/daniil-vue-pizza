@@ -1,6 +1,6 @@
 <template>
   <div class="layout__sidebar sidebar">
-    <router-link to="/" class="logo layout__logo">
+    <router-link :to="{ name: RouteName.HOME}" class="logo layout__logo">
       <img
         src="@/assets/img/logo.svg"
         alt="V!U!E! Pizza logo"
@@ -15,6 +15,7 @@
 </template>
 
 <script setup>
+import { RouteName } from '@/common/constants';
 </script>
 
 <style scoped lang="scss">

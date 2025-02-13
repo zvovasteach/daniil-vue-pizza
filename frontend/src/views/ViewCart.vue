@@ -69,9 +69,9 @@ import sauces from '@/mocks/sauces.json';
 import sizes from '@/mocks/sizes.json';
 import miscJSON from '@/mocks/misc.json';
 import { normalizeMisc } from '@/common/helpers/normalize';
-import { MIN_FILLING_COUNT } from '@/common/constants';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { calculatePizzaPrice } from '@/common/helpers';
+import { orderType } from '@/common/constants';
 
 const adaptToClient = (array) => Object.values(array).reduce((acc, item) => {
   acc[item.id] = item;
@@ -85,13 +85,12 @@ const adaptSizes = adaptToClient(sizes);
 const miscItems = ref(adaptToClient(miscJSON.map(normalizeMisc)));
 const pizzas = ref(cartValue.pizzas);
 
-defineEmits(['update:miscItem', 'update:pizza']);
-const validateAdditionalItem = async (name, value) => {
+const validateAdditionalItem = (name, value) => {
   const newValue = Number(value);
 
-  if (newValue < MIN_FILLING_COUNT) {
+  if (newValue < 0) {
     const result = { ...miscItems.value[name] };
-    result.quantity = MIN_FILLING_COUNT;
+    result.quantity = 0;
     miscItems.value[name] = result;
   } else {
     const result = { ...miscItems.value[name] };
@@ -101,11 +100,11 @@ const validateAdditionalItem = async (name, value) => {
 };
 const validateMainItem = async (id, value) => {
   const newValue = Number(value);
-  const item = pizzas.value.findIndex((pizza) => pizza.id === id);
-  if (newValue === MIN_FILLING_COUNT) {
-    pizzas.value.splice(item, 1);
+  const pizzaIndex = pizzas.value.findIndex((pizza) => pizza.id === id);
+  if (newValue === 0) {
+    pizzas.value.splice(pizzaIndex, 1);
   } else {
-    pizzas.value[item].quantity = newValue;
+    pizzas.value[pizzaIndex].quantity = newValue;
   }
 };
 
@@ -129,12 +128,12 @@ watch(
   (length) => {
     if (length === 0) {
       Object.values(miscItems.value).map((misc) => {
-        misc.quantity = MIN_FILLING_COUNT;
+        misc.quantity = 0;
       });
     }
   });
 const formData = ref({
-  orderType: '2',
+  orderType: orderType.NEW_ADDRESS,
   phone: '',
   address: {
     street: '',
@@ -152,7 +151,7 @@ const getOrderData = () => {
       .filter((misc) => misc.quantity > 0)
       .map((misc) => ({ miscId: misc.id, quantity: misc.quantity })),
   };
-  if (formData.value.orderType === '2') {
+  if (formData.value.orderType === orderType.NEW_ADDRESS) {
     orderData.address = formData.value.address;
   }
   // eslint-disable-next-line no-console

@@ -5,7 +5,7 @@
         <span class="cart-form__label">Получение заказа:</span>
 
         <select
-          v-model="formData.orderType"
+          v-model="Number(formData.orderType)"
           name="test"
           class="select"
         >
@@ -16,7 +16,8 @@
         </select>
       </label>
       <label
-        v-show="formData.orderType <= '2'"
+        v-show="formData.orderType === orderType.NEW_ADDRESS
+          && formData.orderType === orderType.BY_YOURSELF"
         class="input input--big-label"
       >
         <span>Контактный телефон:</span>
@@ -31,7 +32,7 @@
         />
       </label>
       <div
-        v-if="formData.orderType === '2'"
+        v-if="formData.orderType === orderType.NEW_ADDRESS"
         class="cart-form__address"
       >
         <span class="cart-form__label">Новый адрес:</span>
@@ -73,6 +74,7 @@
 import AppInput from '@/common/components/AppInput.vue';
 import { validateFields } from '@/common/validator';
 import { ref } from 'vue';
+import { orderType } from '@/common/constants';
 
 const formData = defineModel({ type: Object });
 const validations = ref({
@@ -91,7 +93,7 @@ const validations = ref({
 });
 
 const validate = () => {
-  if (formData.value.orderType === '2') {
+  if (formData.value.orderType === orderType.NEW_ADDRESS) {
     return validateFields({
       addressStreet: formData.value.address.street,
       addressBuilding: formData.value.address.building,

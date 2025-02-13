@@ -1,6 +1,6 @@
 <template>
   <div class="sign-form">
-    <router-link to="/" class="close close--white">
+    <router-link :to="{ name: RouteName.HOME}" class="close close--white">
       <span class="visually-hidden">Закрыть форму авторизации</span>
     </router-link>
     <div class="sign-form__title">
@@ -45,6 +45,7 @@
 import AppInput from '@/common/components/AppInput.vue';
 import { ref } from 'vue';
 import { validateFields } from '@/common/validator';
+import { RouteName } from '@/common/constants';
 const validations = ref({
   email: {
     error: '',

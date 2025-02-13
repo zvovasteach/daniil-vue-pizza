@@ -1,7 +1,7 @@
 <template>
   <section class="footer">
     <div class="footer__more">
-      <router-link to="/" class="button button--border button--arrow">Хочу еще одну</router-link>
+      <router-link :to="{ name: RouteName.HOME}" class="button button--border button--arrow">Хочу еще одну</router-link>
     </div>
     <p class="footer__text">Перейти к конструктору<br />чтоб собрать ещё одну пиццу</p>
     <div class="footer__price">
@@ -21,6 +21,8 @@
 </template>
 
 <script setup>
+import { RouteName } from '@/common/constants';
+
 defineEmits(['sendData']);
 defineProps({
   pizzasPrice: {

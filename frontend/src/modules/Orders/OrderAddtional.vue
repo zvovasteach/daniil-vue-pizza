@@ -8,7 +8,7 @@
     />
     <p>
       <span>{{ miscItems[misc.miscId].name }}</span>
-      <b>56 ₽ x {{ misc.quantity }}</b>
+      <b>{{ miscItems[misc.miscId].price }} ₽ x {{ misc.quantity }}</b>
     </p>
   </li>
 </template>
