@@ -5,7 +5,7 @@
         <span class="cart-form__label">Получение заказа:</span>
 
         <select
-          v-model="Number(formData.orderType)"
+          v-model="formData.orderType"
           name="test"
           class="select"
         >
