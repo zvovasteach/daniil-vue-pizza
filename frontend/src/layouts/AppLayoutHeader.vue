@@ -1,26 +1,26 @@
 <template>
   <header class="header">
     <div class="header__logo">
-      <a href="index.html" class="logo">
+      <router-link :to="{ name: RouteName.HOME}" class="logo">
         <img
           src="@/assets/img/logo.svg"
           alt="V!U!E! Pizza logo"
           width="90"
           height="40"
         />
-      </a>
+      </router-link>
     </div>
     <div class="header__cart">
-      <a href="">0 ₽</a>
+      <router-link :to="{ name: RouteName.CART}">0 ₽</router-link>
     </div>
     <div class="header__user">
-      <a href="#" class="header__login"><span>Войти</span></a>
+      <router-link :to="{ name: RouteName.SIGN_IN}" class="header__login"><span>Войти</span></router-link>
     </div>
   </header>
 </template>
 
 <script setup>
-
+import { RouteName } from '@/common/constants';
 </script>
 
 <style scoped lang="scss">

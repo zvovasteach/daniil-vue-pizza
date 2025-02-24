@@ -15,34 +15,11 @@
           </span>
         </AppDrag>
         <div class="counter counter--orange ingredients__counter">
-          <button
-            type="button"
-            class="counter__button counter__button--minus"
-            :disabled="!fillingItems[ingredient.value].count"
-            @click="fillingItems[ingredient.value].count--"
-          >
-            <span class="visually-hidden">Меньше</span>
-          </button>
-          <input
-            type="number"
-            name="counter"
-            class="counter__input"
-            :value="fillingItems[ingredient.value].count"
-            min="0"
-            max="3"
-            step="1"
-            pattern="[0-3]{1}"
-            size="1"
-            @input="inputValidation(ingredient.value, $event.target.value)"
+          <AppCounter
+            :max-count="MAX_FILLING_COUNT"
+            :model-value="fillingItems[ingredient.value].count"
+            @update:model-value="inputValidation(ingredient.value, $event)"
           />
-          <button
-            type="button"
-            class="counter__button counter__button--plus"
-            :disabled="fillingItems[ingredient.value].count === MAX_FILLING_COUNT"
-            @click="fillingItems[ingredient.value].count++"
-          >
-            <span class="visually-hidden">Больше</span>
-          </button>
         </div>
       </li>
     </ul>
@@ -50,35 +27,46 @@
 </template>
 
 <script setup>
-import { MAX_FILLING_COUNT, MIN_FILLING_COUNT } from '@/common/constants';
+import { MAX_FILLING_COUNT } from '@/common/constants';
 import AppDrag from '@/common/components/AppDrag.vue';
-import cloneDeep from 'lodash-es/cloneDeep';
+import AppCounter from '@/common/components/AppCounter.vue';
 
-defineProps({
+const props = defineProps({
   ingredientsFilling: {
     type: Object,
     required: true,
   },
+  fillingItems: {
+    type: Object,
+    required: true,
+  },
 });
-const fillingItems = defineModel({ type: Object });
-const inputValidation = (name, value) => {
+const emit = defineEmits(['update:fillingItems']);
+const inputValidation = async (name, value) => {
   const newValue = Number(value);
-
   if (newValue > MAX_FILLING_COUNT) {
-    const result = cloneDeep(fillingItems.value);
-    result[name].count = MAX_FILLING_COUNT;
-    fillingItems.value = result;
-  } else if (newValue < MIN_FILLING_COUNT) {
-    const result = cloneDeep(fillingItems.value);
-    result[name].count = MIN_FILLING_COUNT;
-    fillingItems.value = result;
+    const result = { ...props.fillingItems[name] };
+    result.count = MAX_FILLING_COUNT;
+    emit('update:fillingItems', {
+      ...props.fillingItems,
+      [name]: result,
+    });
+  } else if (newValue < 0) {
+    const result = { ...props.fillingItems[name] };
+    result.count = 0;
+    emit('update:fillingItems', {
+      ...props.fillingItems,
+      [name]: result,
+    });
   } else {
-    const result = cloneDeep(fillingItems.value);
-    result[name].count = newValue;
-    fillingItems.value = result;
+    const result = { ...props.fillingItems[name] };
+    result.count = newValue;
+    emit('update:fillingItems', {
+      ...props.fillingItems,
+      [name]: result,
+    });
   }
 };
-
 </script>
 
 <style scoped lang="scss">
