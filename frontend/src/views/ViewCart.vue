@@ -98,7 +98,7 @@ const validateAdditionalItem = (name, value) => {
     miscItems.value[name] = result;
   }
 };
-const validateMainItem = async (id, value) => {
+const validateMainItem = (id, value) => {
   const newValue = Number(value);
   const pizzaIndex = pizzas.value.findIndex((pizza) => pizza.id === id);
   if (newValue === 0) {
