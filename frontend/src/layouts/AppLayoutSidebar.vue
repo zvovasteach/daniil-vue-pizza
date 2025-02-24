@@ -9,8 +9,8 @@
       />
     </router-link>
 
-    <router-link class="layout__link" active-class="layout__link--active" to="/orders">История заказов</router-link>
-    <router-link class="layout__link" active-class="layout__link--active" to="/user">Мои данные</router-link>
+    <router-link class="layout__link" active-class="layout__link--active" :to="{ name: RouteName.ORDERS}">История заказов</router-link>
+    <router-link class="layout__link" active-class="layout__link--active" :to="{ name: RouteName.USER_DATA}">Мои данные</router-link>
   </div>
 </template>
 

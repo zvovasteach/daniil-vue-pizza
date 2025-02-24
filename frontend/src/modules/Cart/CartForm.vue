@@ -16,8 +16,8 @@
         </select>
       </label>
       <label
-        v-show="formData.orderType === orderType.NEW_ADDRESS
-          && formData.orderType === orderType.BY_YOURSELF"
+        v-if="formData.orderType === orderType.NEW_ADDRESS
+          || formData.orderType === orderType.BY_YOURSELF"
         class="input input--big-label"
       >
         <span>Контактный телефон:</span>
