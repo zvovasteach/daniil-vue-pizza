@@ -4,15 +4,24 @@
       <div class="content__wrapper">
         <h1 class="title title--big">Конструктор пиццы</h1>
 
-        <DoughType v-model="selectedDough" :dough-items="doughItems" />
-        <DoughSize v-model="selectedSize" :size-items="sizeItems" />
+        <ConstructorType
+          v-model="selectedDough"
+          :dough-items="pizzaParts.dough"
+        />
+        <ConstructorSize
+          v-model="selectedSize"
+          :size-items="pizzaParts.sizes"
+        />
 
         <div class="content__ingredients">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите ингредиенты</h2>
             <div class="sheet__content ingredients">
-              <DoughSauce v-model="selectedSauce" :sauce-items="sauceItems" />
-              <DoughFilling
+              <ConstructorSauce
+                v-model="selectedSauce"
+                :sauce-items="pizzaParts.sauces"
+              />
+              <ConstructorFilling
                 v-model:filling-items="fillingItems"
                 :ingredients-filling="ingredientsFilling"
               />
@@ -27,7 +36,7 @@
             input-name="pizza-name"
             hidden
           />
-          <PizzaPreview
+          <ConstructorPizza
             v-model="fillingItems"
             :sauce="selectedSauce"
             :dough="selectedDough"
@@ -39,26 +48,18 @@
             <p class="pizza-price">Итого: {{ pizzaPrice }} ₽</p>
             <div class="button-wrapper">
               <AppButton
-                v-if="editingPizzaId"
                 class="button--send"
                 :disabled="!pizzaName"
-                @click="sendPizzaInformation"
+                @click="savePizzaInformation"
               >
-                Сохранить
-              </AppButton>
-              <AppButton
-                v-else
-                class="button--send"
-                :disabled="!pizzaName"
-                @click="sendPizzaInformation"
-              >
-                Готовьте!
+                <template v-if="editingPizzaId">Сохранить</template>
+                <template v-else>Готовьте!</template>
               </AppButton>
               <AppButton
                 v-if="editingPizzaId"
                 class="button--decline"
                 :disabled="!pizzaName"
-                @click="declineSendPizzaInformation"
+                @click="declineSavePizzaInformation"
               >
                 Отмена
               </AppButton>
@@ -72,16 +73,11 @@
 
 <script setup>
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
-import DoughType from '@/modules/Constructor/ConstructorDoughType.vue';
-import DoughSize from '@/modules/Constructor/ConstructorDoughSize.vue';
-import DoughSauce from '@/modules/Constructor/ConstructorDoughSauce.vue';
-import DoughFilling from '@/modules/Constructor/ConstructorDoughFilling.vue';
-import PizzaPreview from '@/modules/Constructor/ConstructorPizzaPreview.vue';
-import doughJSON from '@/mocks/dough.json';
-import saucesJSON from '@/mocks/sauces.json';
-import sizesJSON from '@/mocks/sizes.json';
-import ingredientsJSON from '@/mocks/ingredients.json';
-import { normalizeIngredients, normalizeSauces, normalizeSize, normalizeDough } from '@/common/helpers/normalize';
+import ConstructorType from '@/modules/Constructor/ConstructorType.vue';
+import ConstructorSize from '@/modules/Constructor/ConstructorSize.vue';
+import ConstructorSauce from '@/modules/Constructor/ConstructorSauce.vue';
+import ConstructorFilling from '@/modules/Constructor/ConstructorFilling.vue';
+import ConstructorPizza from '@/modules/Constructor/ConstructorPizza.vue';
 import AppButton from '@/common/components/AppButton.vue';
 import AppInput from '@/common/components/AppInput.vue';
 import { uniqueId } from 'lodash-es/util';
@@ -89,73 +85,37 @@ import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
 import { RouteName } from '@/common/constants';
 import router from '@/router';
-const { editingPizzaId, pizzas } = storeToRefs(useCartStore());
-const doughItems = doughJSON.map(normalizeDough);
-
-const sauceItems = saucesJSON.map(normalizeSauces);
-
-const sizeItems = sizesJSON.map(normalizeSize);
-
-const selectedSauce = ref(sauceItems[0]);
-const selectedDough = ref(doughItems[0]);
-const selectedSize = ref(sizeItems[0]);
+const { editingPizzaId, pizzas, pizzaParts } = storeToRefs(useCartStore());
+const selectedSauce = ref(pizzaParts.value.sauces[1]);
+const selectedDough = ref(pizzaParts.value.dough[1]);
+const selectedSize = ref(pizzaParts.value.sizes[1]);
 const pizzaName = ref('');
-const ingredientsFilling = ingredientsJSON.map(normalizeIngredients);
-
+const ingredientsFilling = ref(pizzaParts.value.ingredients);
 const fillingItems = ref(
-  ingredientsFilling.reduce((acc, curr) => {
+  Object.values(ingredientsFilling.value).reduce((acc, curr) => {
     acc[curr.value] = {
-      count: 0,
+      quantity: 0,
       price: curr.price,
-      id: curr.id,
+      ingredientId: curr.id,
     };
     return acc;
   }, {}),
 );
 
-onBeforeMount(() => {
-  if (editingPizzaId.value) {
-    selectedSauce.value = sauceItems.find((sauce) =>
-      pizzas.value.find((pizzaItem) => pizzaItem.id === editingPizzaId.value)
-        .sauceId === sauce.id);
-    ///
-    selectedDough.value = doughItems.find((dough) =>
-      pizzas.value.find((pizzaItem) => pizzaItem.id === editingPizzaId.value)
-        .doughId === dough.id);
-    ///
-    selectedSize.value = sizeItems.find((size) =>
-      pizzas.value.find((pizzaItem) =>
-        pizzaItem.id === editingPizzaId.value).sizeId === size.id);
-    ///
-    pizzaName.value = pizzas.value.find((pizzaItem) =>
-      pizzaItem.id === editingPizzaId.value).name;
-    ///
-    pizzas.value.find((pizzaItem) =>
-      pizzaItem.id === editingPizzaId.value)
-      .ingredients.map((ingredientItem) => {
-        Object.values(fillingItems.value).find((ingredient) =>
-          ingredient.id === ingredientItem.ingredientId).count
-      = ingredientItem.quantity;
-      });
-  }
-});
-
 const selectedItems = computed(() =>
   Object.entries(fillingItems.value).reduce((acc, [key, value]) => {
-    if (value.count) {
+    if (value.quantity) {
       acc[key] = value;
     }
     return acc;
   }, {}));
-const pizzaPrice = computed(() => {
-  const fillingPrice
-    = Object.values(selectedItems.value).reduce((acc, value) => {
-      acc += value.count * value.price;
-      return acc;
-    }, 0);
-  return selectedSize.value.multiplier
-    * (fillingPrice + selectedDough.value.price + selectedSauce.value.price);
-});
+import { calculatePizzaPrice } from '@/common/helpers';
+const pizzaPrice = computed(() => calculatePizzaPrice(
+  { ingredients: Object.values(selectedItems.value),
+    sizeId: selectedSize.value.id,
+    doughId: selectedDough.value.id,
+    sauceId: selectedSauce.value.id },
+  pizzaParts.value));
 const createPizzaInformation = () =>
   ({
     name: pizzaName.value,
@@ -165,12 +125,12 @@ const createPizzaInformation = () =>
     quantity: 1,
     ingredients: Object.values(selectedItems.value).map((item) => (
       {
-        ingredientId: item.id,
-        quantity: item.count,
+        ingredientId: item.ingredientId,
+        quantity: item.quantity,
       })),
     id: uniqueId(),
   });
-const sendPizzaInformation = () => {
+const savePizzaInformation = () => {
   if (editingPizzaId.value) {
     const pizzaIndex = pizzas.value.findIndex((pizzaItem) =>
       pizzaItem.id === editingPizzaId.value);
@@ -180,10 +140,30 @@ const sendPizzaInformation = () => {
   }
   router.push({ name: RouteName.CART });
 };
-const declineSendPizzaInformation = () => {
+const declineSavePizzaInformation = () => {
   router.push({ name: RouteName.CART });
 };
-onBeforeUnmount(() => (editingPizzaId.value = ''));
+onBeforeMount(() => {
+  if (editingPizzaId.value) {
+    const pizzaItem = pizzas.value.find((pizza) =>
+      pizza.id === editingPizzaId.value);
+    selectedSauce.value = Object.values(pizzaParts.value.sauces).find((sauce) =>
+      pizzaItem.sauceId === sauce.id);
+    selectedDough.value = Object.values(pizzaParts.value.dough).find((dough) =>
+      pizzaItem.doughId === dough.id);
+    selectedSize.value = Object.values(pizzaParts.value.sizes).find((size) =>
+      pizzaItem.sizeId === size.id);
+    pizzaName.value = pizzaItem.name;
+    pizzaItem.ingredients.map((ingredientItem) => {
+      Object.values(fillingItems.value).find((ingredient) =>
+        ingredient.ingredientId === ingredientItem.ingredientId).quantity
+        = ingredientItem.quantity;
+    });
+  }
+});
+onBeforeUnmount(() => {
+  editingPizzaId.value = '';
+});
 </script>
 
 <style scoped lang="scss">

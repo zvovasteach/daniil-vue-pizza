@@ -12,7 +12,7 @@
       <button
         type="submit"
         class="button"
-        @click="$emit('sendData')"
+        @click="$emit('confirmOrder')"
       >
         Оформить заказ
       </button>
@@ -25,7 +25,7 @@ import { RouteName } from '@/common/constants';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
 const { totalOrderPrice } = storeToRefs(useCartStore());
-defineEmits(['sendData']);
+defineEmits(['confirmOrder']);
 </script>
 
 <style scoped lang="scss">

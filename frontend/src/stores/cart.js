@@ -25,22 +25,21 @@ export const useCartStore = defineStore('cart', () => {
   const misc = ref(adaptToClient(miscJSON.map(normalizeMisc)));
   const editingPizzaId = ref('');
   const totalOrderPrice = computed(() => {
-    const totalPizzaPrice = () => pizzas.value.reduce(
+    const totalPizzaPrice = pizzas.value.reduce(
       (acc, pizza) =>
         acc + calculatePizzaPrice(pizza, pizzaParts.value) * pizza.quantity,
       0,
     );
-    const totalAdditionalItemPrice = () =>
-      Object.values(misc.value).reduce(
-        (acc, miscItem) => acc + miscItem.quantity * miscItem.price,
-        0);
-    return totalAdditionalItemPrice() + totalPizzaPrice();
+    const totalAdditionalItemPrice = Object.values(misc.value).reduce(
+      (acc, miscItem) =>
+        acc + miscItem.quantity * miscItem.price, 0);
+    return totalAdditionalItemPrice + totalPizzaPrice;
   });
   watch(
     () => pizzas.value.length,
     (length) => {
       if (length === 0) {
-        Object.values(misc.value).map((miscItem) => {
+        Object.values(misc.value).forEach((miscItem) => {
           miscItem.quantity = 0;
         });
       }

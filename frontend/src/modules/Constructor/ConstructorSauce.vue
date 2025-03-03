@@ -26,7 +26,7 @@ defineProps({
     required: true,
   },
   sauceItems: {
-    type: Array,
+    type: Object,
     required: true,
   },
 });

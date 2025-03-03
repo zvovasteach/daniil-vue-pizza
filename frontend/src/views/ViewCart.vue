@@ -27,7 +27,7 @@
           />
           <div class="cart__additional">
             <ul class="additional-list">
-              <CartAdditionalItems
+              <CartAdditionalItem
                 v-for="miscItem in misc"
                 :key="miscItem.id"
                 :misc-item="miscItem"
@@ -42,7 +42,7 @@
       </div>
     </main>
     <CartFooter
-      @send-data="createFormData"
+      @confirm-order="createOrder"
     />
   </form>
 </template>
@@ -51,7 +51,7 @@
 
 import CartFooter from '@/modules/Cart/CartFooter.vue';
 import CartForm from '@/modules/Cart/CartForm.vue';
-import CartAdditionalItems from '@/modules/Cart/CartAdditionalItems.vue';
+import CartAdditionalItem from '@/modules/Cart/CartAdditionalItem.vue';
 import CartMainItem from '@/modules/Cart/CartMainItem.vue';
 import { ref, useTemplateRef } from 'vue';
 import { storeToRefs } from 'pinia';
@@ -82,14 +82,15 @@ const getOrderData = () => {
   if (formData.value.orderType === orderType.NEW_ADDRESS) {
     orderData.address = formData.value.address;
   }
-  // eslint-disable-next-line no-console
-  console.log(orderData);
+  return orderData;
 };
 
 const form = useTemplateRef('form');
-const createFormData = () => {
+const createOrder = () => {
   if (form.value.validate()) {
     getOrderData();
+    // eslint-disable-next-line no-console
+    console.log(getOrderData());
   }
 };
 </script>
