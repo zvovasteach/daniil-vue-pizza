@@ -5,7 +5,7 @@
     </div>
     <p class="footer__text">Перейти к конструктору<br />чтоб собрать ещё одну пиццу</p>
     <div class="footer__price">
-      <b>Итого: {{ pizzasPrice + additionalPrice }} ₽</b>
+      <b>Итого: {{ totalOrderPrice }} ₽</b>
     </div>
 
     <div class="footer__submit">
@@ -22,18 +22,10 @@
 
 <script setup>
 import { RouteName } from '@/common/constants';
-
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+const { totalOrderPrice } = storeToRefs(useCartStore());
 defineEmits(['sendData']);
-defineProps({
-  pizzasPrice: {
-    type: [Number, null],
-    required: true,
-  },
-  additionalPrice: {
-    type: Number,
-    required: true,
-  },
-});
 </script>
 
 <style scoped lang="scss">

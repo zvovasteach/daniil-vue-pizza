@@ -1,5 +1,5 @@
 <template>
-  <AppDrop @drop="increaseCount">
+  <AppDrop @drop="increaseFillingCount">
     <div class="content__constructor">
       <div
         :class="`pizza pizza--foundation--${dough.value}-${sauce.value}`"
@@ -39,7 +39,7 @@ defineProps({
   },
 });
 const fillingItems = defineModel({ type: Object });
-const increaseCount = (ingredientItem) => {
+const increaseFillingCount = (ingredientItem) => {
   if (fillingItems.value[ingredientItem].count < MAX_FILLING_COUNT) {
     fillingItems.value[ingredientItem].count++;
   }

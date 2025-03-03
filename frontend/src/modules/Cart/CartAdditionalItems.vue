@@ -15,7 +15,7 @@
         <AppCounter
           :model-value="miscItem.quantity"
           orange
-          @update:model-value="$emit('updateCount', $event)"
+          @update:model-value="validateAdditionalItem(miscItem.id, $event)"
         />
       </div>
 
@@ -29,14 +29,28 @@
 <script setup>
 import AppCounter from '@/common/components/AppCounter.vue';
 import { getImage } from '@/common/helpers';
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+const { misc } = storeToRefs(useCartStore());
 defineProps({
   miscItem: {
     type: Object,
     required: true,
   },
 });
-defineEmits(['updateCount']);
+const validateAdditionalItem = (name, value) => {
+  const newValue = Number(value);
 
+  if (newValue < 0) {
+    const result = { ...misc.value[name] };
+    result.quantity = 0;
+    misc.value[name] = result;
+  } else {
+    const result = { ...misc.value[name] };
+    result.quantity = newValue;
+    misc.value[name] = result;
+  }
+};
 </script>
 
 <style scoped lang="scss">

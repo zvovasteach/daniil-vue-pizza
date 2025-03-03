@@ -24,20 +24,13 @@
             v-for="pizza in pizzas"
             :key="pizza.id"
             :pizza="pizza"
-            :ingredients="adaptIngredients"
-            :dough="adaptDough"
-            :sauces="adaptSauces"
-            :sizes="adaptSizes"
-            :pizza-price="calculatePizzaPrice(pizza, pizzaParts)"
-            @update-count="validateMainItem(pizza.id, $event)"
           />
           <div class="cart__additional">
             <ul class="additional-list">
               <CartAdditionalItems
-                v-for="misc in miscItems"
-                :key="misc.id"
-                :misc-item="misc"
-                @update-count="validateAdditionalItem(misc.id, $event)"
+                v-for="miscItem in misc"
+                :key="miscItem.id"
+                :misc-item="miscItem"
               />
             </ul>
           </div>
@@ -49,8 +42,6 @@
       </div>
     </main>
     <CartFooter
-      :additional-price="totalAdditionalItemPrice"
-      :pizzas-price="totalPizzaPrice"
       @send-data="createFormData"
     />
   </form>
@@ -62,76 +53,12 @@ import CartFooter from '@/modules/Cart/CartFooter.vue';
 import CartForm from '@/modules/Cart/CartForm.vue';
 import CartAdditionalItems from '@/modules/Cart/CartAdditionalItems.vue';
 import CartMainItem from '@/modules/Cart/CartMainItem.vue';
-import cartValue from '@/mocks/cartValue.json';
-import ingredients from '@/mocks/ingredients.json';
-import dough from '@/mocks/dough.json';
-import sauces from '@/mocks/sauces.json';
-import sizes from '@/mocks/sizes.json';
-import miscJSON from '@/mocks/misc.json';
-import { normalizeMisc } from '@/common/helpers/normalize';
-import { computed, ref, useTemplateRef, watch } from 'vue';
-import { calculatePizzaPrice } from '@/common/helpers';
+import { ref, useTemplateRef } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+const { pizzas, misc } = storeToRefs(useCartStore());
 import { orderType } from '@/common/constants';
 
-const adaptToClient = (array) => Object.values(array).reduce((acc, item) => {
-  acc[item.id] = item;
-  return acc;
-}, {});
-
-const adaptIngredients = adaptToClient(ingredients);
-const adaptDough = adaptToClient(dough);
-const adaptSauces = adaptToClient(sauces);
-const adaptSizes = adaptToClient(sizes);
-const miscItems = ref(adaptToClient(miscJSON.map(normalizeMisc)));
-const pizzas = ref(cartValue.pizzas);
-
-const validateAdditionalItem = (name, value) => {
-  const newValue = Number(value);
-
-  if (newValue < 0) {
-    const result = { ...miscItems.value[name] };
-    result.quantity = 0;
-    miscItems.value[name] = result;
-  } else {
-    const result = { ...miscItems.value[name] };
-    result.quantity = newValue;
-    miscItems.value[name] = result;
-  }
-};
-const validateMainItem = (id, value) => {
-  const newValue = Number(value);
-  const pizzaIndex = pizzas.value.findIndex((pizza) => pizza.id === id);
-  if (newValue === 0) {
-    pizzas.value.splice(pizzaIndex, 1);
-  } else {
-    pizzas.value[pizzaIndex].quantity = newValue;
-  }
-};
-
-const pizzaParts = {
-  ingredients: adaptIngredients,
-  sizes: adaptSizes,
-  doughs: adaptDough,
-  sauces: adaptSauces,
-};
-const totalPizzaPrice = computed(() => pizzas.value.reduce(
-  (acc, pizza) => acc + calculatePizzaPrice(pizza, pizzaParts) * pizza.quantity,
-  0,
-));
-
-const totalAdditionalItemPrice = computed(() =>
-  Object.values(miscItems.value).reduce(
-    (acc, misc) => acc + misc.quantity * misc.price,
-    0));
-watch(
-  () => pizzas.value.length,
-  (length) => {
-    if (length === 0) {
-      Object.values(miscItems.value).map((misc) => {
-        misc.quantity = 0;
-      });
-    }
-  });
 const formData = ref({
   orderType: orderType.NEW_ADDRESS,
   phone: '',
@@ -147,9 +74,10 @@ const getOrderData = () => {
     userId: 'testId',
     phone: formData.value.phone,
     pizzas: pizzas.value,
-    misc: Object.values(miscItems.value)
-      .filter((misc) => misc.quantity > 0)
-      .map((misc) => ({ miscId: misc.id, quantity: misc.quantity })),
+    misc: Object.values(misc.value)
+      .filter((miscItem) => miscItem.quantity > 0)
+      .map((miscItem) =>
+        ({ miscId: miscItem.id, quantity: miscItem.quantity })),
   };
   if (formData.value.orderType === orderType.NEW_ADDRESS) {
     orderData.address = formData.value.address;
