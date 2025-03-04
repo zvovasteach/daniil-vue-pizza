@@ -32,7 +32,9 @@ export const useCartStore = defineStore('cart', () => {
     );
     const totalAdditionalItemPrice = Object.values(misc.value).reduce(
       (acc, miscItem) =>
-        acc + miscItem.quantity * miscItem.price, 0);
+        acc + miscItem.quantity * miscItem.price,
+      0,
+    );
     return totalAdditionalItemPrice + totalPizzaPrice;
   });
   watch(

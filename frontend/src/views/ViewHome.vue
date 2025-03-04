@@ -52,8 +52,7 @@
                 :disabled="!pizzaName"
                 @click="savePizzaInformation"
               >
-                <template v-if="editingPizzaId">Сохранить</template>
-                <template v-else>Готовьте!</template>
+                {{ editingPizzaId ? "Сохранить" : "Готовьте!" }}
               </AppButton>
               <AppButton
                 v-if="editingPizzaId"
@@ -85,6 +84,7 @@ import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
 import { RouteName } from '@/common/constants';
 import router from '@/router';
+import { calculatePizzaPrice } from '@/common/helpers';
 const { editingPizzaId, pizzas, pizzaParts } = storeToRefs(useCartStore());
 const selectedSauce = ref(pizzaParts.value.sauces[1]);
 const selectedDough = ref(pizzaParts.value.dough[1]);
@@ -109,12 +109,14 @@ const selectedItems = computed(() =>
     }
     return acc;
   }, {}));
-import { calculatePizzaPrice } from '@/common/helpers';
+
 const pizzaPrice = computed(() => calculatePizzaPrice(
-  { ingredients: Object.values(selectedItems.value),
+  {
+    ingredients: Object.values(selectedItems.value),
     sizeId: selectedSize.value.id,
     doughId: selectedDough.value.id,
-    sauceId: selectedSauce.value.id },
+    sauceId: selectedSauce.value.id,
+  },
   pizzaParts.value));
 const createPizzaInformation = () =>
   ({

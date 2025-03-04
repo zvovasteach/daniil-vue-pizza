@@ -88,7 +88,6 @@ const getOrderData = () => {
 const form = useTemplateRef('form');
 const createOrder = () => {
   if (form.value.validate()) {
-    getOrderData();
     // eslint-disable-next-line no-console
     console.log(getOrderData());
   }
