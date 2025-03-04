@@ -33,7 +33,7 @@ defineProps({
     required: true,
   },
   doughItems: {
-    type: Array,
+    type: Object,
     required: true,
   },
 });

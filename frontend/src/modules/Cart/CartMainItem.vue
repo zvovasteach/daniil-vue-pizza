@@ -13,17 +13,17 @@
           <h2>{{ pizza.name }}</h2>
           <ul>
             <li>
-              {{ sizes[pizza.sizeId].name }}, на
+              {{ pizzaParts.sizes[pizza.sizeId].name }}, на
               {{ doughNameRu[pizza.doughId] }} тесте
             </li>
-            <li>Соус: {{ sauces[pizza.sauceId].name }}</li>
+            <li>Соус: {{ pizzaParts.sauces[pizza.sauceId].name }}</li>
             <li>
               Начинка:
               <template
                 v-for="ingredient in pizza.ingredients"
                 :key="ingredient.id"
               >
-                {{ ingredients[ingredient.ingredientId].name }},
+                {{ pizzaParts.ingredients[ingredient.ingredientId].name }},
               </template>
             </li>
           </ul>
@@ -34,16 +34,22 @@
         <AppCounter
           :model-value="pizza.quantity"
           orange
-          @update:model-value="$emit('updateCount', $event)"
+          @update:model-value="updatePizzaCount(pizza.id, $event)"
         />
       </div>
 
       <div class="cart-list__price">
-        <b>{{ pizzaPrice }} ₽</b>
+        <b>{{ pizzaPrice * pizza.quantity }} ₽</b>
       </div>
 
       <div class="cart-list__button">
-        <button type="button" class="cart-list__edit">Изменить</button>
+        <button
+          type="button"
+          class="cart-list__edit"
+          @click="editPizza(pizza)"
+        >
+          Изменить
+        </button>
       </div>
     </li>
   </ul>
@@ -52,35 +58,34 @@
 <script setup>
 import AppCounter from '@/common/components/AppCounter.vue';
 import doughNameRu from '@/common/data/dough-name-ru';
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+import { calculatePizzaPrice } from '@/common/helpers';
+import router from '@/router';
+import { RouteName } from '@/common/constants';
 
-defineEmits(['updateCount']);
-defineProps({
+const { pizzaParts, editingPizzaId, pizzas } = storeToRefs(useCartStore());
+
+const props = defineProps({
   pizza: {
     type: Object,
     required: true,
   },
-  ingredients: {
-    type: Object,
-    required: true,
-  },
-  dough: {
-    type: Object,
-    required: true,
-  },
-  sauces: {
-    type: Object,
-    required: true,
-  },
-  sizes: {
-    type: Object,
-    required: true,
-  },
-  pizzaPrice: {
-    type: Number,
-    required: true,
-  },
 });
-
+const pizzaPrice = calculatePizzaPrice(props.pizza, pizzaParts.value);
+const editPizza = (pizza) => {
+  editingPizzaId.value = pizza.id;
+  router.push({ name: RouteName.HOME });
+};
+const updatePizzaCount = (id, value) => {
+  const newValue = Number(value);
+  const pizzaIndex = pizzas.value.findIndex((pizza) => pizza.id === id);
+  if (newValue === 0) {
+    pizzas.value.splice(pizzaIndex, 1);
+  } else {
+    pizzas.value[pizzaIndex].quantity = newValue;
+  }
+};
 </script>
 
 <style scoped lang="scss">

@@ -4,7 +4,7 @@
     <ul class="ingredients__list">
       <li
         v-for="ingredient in ingredientsFilling"
-        :key="ingredient.id"
+        :key="ingredient.ingredientId"
         class="ingredients__item"
       >
         <AppDrag :transfer-data="ingredient.value">
@@ -17,7 +17,7 @@
         <div class="counter counter--orange ingredients__counter">
           <AppCounter
             :max-count="MAX_FILLING_COUNT"
-            :model-value="fillingItems[ingredient.value].count"
+            :model-value="fillingItems[ingredient.value].quantity"
             @update:model-value="inputValidation(ingredient.value, $event)"
           />
         </div>
@@ -46,21 +46,21 @@ const inputValidation = async (name, value) => {
   const newValue = Number(value);
   if (newValue > MAX_FILLING_COUNT) {
     const result = { ...props.fillingItems[name] };
-    result.count = MAX_FILLING_COUNT;
+    result.quantity = MAX_FILLING_COUNT;
     emit('update:fillingItems', {
       ...props.fillingItems,
       [name]: result,
     });
   } else if (newValue < 0) {
     const result = { ...props.fillingItems[name] };
-    result.count = 0;
+    result.quantity = 0;
     emit('update:fillingItems', {
       ...props.fillingItems,
       [name]: result,
     });
   } else {
     const result = { ...props.fillingItems[name] };
-    result.count = newValue;
+    result.quantity = newValue;
     emit('update:fillingItems', {
       ...props.fillingItems,
       [name]: result,

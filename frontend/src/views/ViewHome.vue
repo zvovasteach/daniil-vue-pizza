@@ -4,15 +4,24 @@
       <div class="content__wrapper">
         <h1 class="title title--big">Конструктор пиццы</h1>
 
-        <DoughType v-model="selectedDough" :dough-items="doughItems" />
-        <DoughSize v-model="selectedSize" :size-items="sizeItems" />
+        <ConstructorType
+          v-model="selectedDough"
+          :dough-items="pizzaParts.dough"
+        />
+        <ConstructorSize
+          v-model="selectedSize"
+          :size-items="pizzaParts.sizes"
+        />
 
         <div class="content__ingredients">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите ингредиенты</h2>
             <div class="sheet__content ingredients">
-              <DoughSauce v-model="selectedSauce" :sauce-items="sauceItems" />
-              <DoughFilling
+              <ConstructorSauce
+                v-model="selectedSauce"
+                :sauce-items="pizzaParts.sauces"
+              />
+              <ConstructorFilling
                 v-model:filling-items="fillingItems"
                 :ingredients-filling="ingredientsFilling"
               />
@@ -27,7 +36,7 @@
             input-name="pizza-name"
             hidden
           />
-          <PizzaPreview
+          <ConstructorPizza
             v-model="fillingItems"
             :sauce="selectedSauce"
             :dough="selectedDough"
@@ -36,13 +45,24 @@
             :selected-items="selectedItems"
           />
           <div class="content__result">
-            <p>Итого: {{ pizzaPrice }} ₽</p>
-            <AppButton
-              :disabled="!pizzaName"
-              @click="getPizzaInformation"
-            >
-              Готовьте!
-            </AppButton>
+            <p class="pizza-price">Итого: {{ pizzaPrice }} ₽</p>
+            <div class="button-wrapper">
+              <AppButton
+                class="button--send"
+                :disabled="!pizzaName"
+                @click="savePizzaInformation"
+              >
+                {{ editingPizzaId ? "Сохранить" : "Готовьте!" }}
+              </AppButton>
+              <AppButton
+                v-if="editingPizzaId"
+                class="button--decline"
+                :disabled="!pizzaName"
+                @click="declineSavePizzaInformation"
+              >
+                Отмена
+              </AppButton>
+            </div>
           </div>
         </div>
       </div>
@@ -51,40 +71,32 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import DoughType from '@/modules/Constructor/ConstructorDoughType.vue';
-import DoughSize from '@/modules/Constructor/ConstructorDoughSize.vue';
-import DoughSauce from '@/modules/Constructor/ConstructorDoughSauce.vue';
-import DoughFilling from '@/modules/Constructor/ConstructorDoughFilling.vue';
-import PizzaPreview from '@/modules/Constructor/ConstructorPizzaPreview.vue';
-import doughJSON from '@/mocks/dough.json';
-import saucesJSON from '@/mocks/sauces.json';
-import sizesJSON from '@/mocks/sizes.json';
-import ingredientsJSON from '@/mocks/ingredients.json';
-import { normalizeIngredients, normalizeSauces, normalizeSize, normalizeDough } from '@/common/helpers/normalize';
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import ConstructorType from '@/modules/Constructor/ConstructorType.vue';
+import ConstructorSize from '@/modules/Constructor/ConstructorSize.vue';
+import ConstructorSauce from '@/modules/Constructor/ConstructorSauce.vue';
+import ConstructorFilling from '@/modules/Constructor/ConstructorFilling.vue';
+import ConstructorPizza from '@/modules/Constructor/ConstructorPizza.vue';
 import AppButton from '@/common/components/AppButton.vue';
 import AppInput from '@/common/components/AppInput.vue';
 import { uniqueId } from 'lodash-es/util';
-
-const doughItems = doughJSON.map(normalizeDough);
-
-const sauceItems = saucesJSON.map(normalizeSauces);
-
-const sizeItems = sizesJSON.map(normalizeSize);
-
-const selectedSauce = ref(sauceItems[0]);
-const selectedDough = ref(doughItems[0]);
-const selectedSize = ref(sizeItems[0]);
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+import { RouteName } from '@/common/constants';
+import router from '@/router';
+import { calculatePizzaPrice } from '@/common/helpers';
+const { editingPizzaId, pizzas, pizzaParts } = storeToRefs(useCartStore());
+const selectedSauce = ref(pizzaParts.value.sauces[1]);
+const selectedDough = ref(pizzaParts.value.dough[1]);
+const selectedSize = ref(pizzaParts.value.sizes[1]);
 const pizzaName = ref('');
-
-const ingredientsFilling = ingredientsJSON.map(normalizeIngredients);
-
+const ingredientsFilling = ref(pizzaParts.value.ingredients);
 const fillingItems = ref(
-  ingredientsFilling.reduce((acc, curr) => {
+  Object.values(ingredientsFilling.value).reduce((acc, curr) => {
     acc[curr.value] = {
-      count: 0,
+      quantity: 0,
       price: curr.price,
-      id: curr.id,
+      ingredientId: curr.id,
     };
     return acc;
   }, {}),
@@ -92,41 +104,73 @@ const fillingItems = ref(
 
 const selectedItems = computed(() =>
   Object.entries(fillingItems.value).reduce((acc, [key, value]) => {
-    if (value.count) {
+    if (value.quantity) {
       acc[key] = value;
     }
     return acc;
   }, {}));
 
-const pizzaPrice = computed(() => {
-  const fillingPrice
-    = Object.values(selectedItems.value).reduce((acc, value) => {
-      acc += value.count * value.price;
-      return acc;
-    }, 0);
-  return selectedSize.value.multiplier
-    * (fillingPrice + selectedDough.value.price + selectedSauce.value.price);
-});
-const getPizzaInformation = () => {
-  const pizza = {
+const pizzaPrice = computed(() => calculatePizzaPrice(
+  {
+    ingredients: Object.values(selectedItems.value),
+    sizeId: selectedSize.value.id,
+    doughId: selectedDough.value.id,
+    sauceId: selectedSauce.value.id,
+  },
+  pizzaParts.value,
+));
+const createPizzaInformation = () =>
+  ({
     name: pizzaName.value,
     sauceId: selectedSauce.value.id,
     doughId: selectedDough.value.id,
     sizeId: selectedSize.value.id,
-    quantity: 0,
-    ingredients: Object.values(selectedItems.value).map((item) => (
-      {
-        ingredientId: item.id,
-        quantity: item.count,
-      })),
-    price: `${pizzaPrice.value} ₽`,
+    quantity: 1,
+    ingredients: Object.values(selectedItems.value).map((item) => ({
+      ingredientId: item.ingredientId,
+      quantity: item.quantity,
+    })),
     id: uniqueId(),
-  };
-  // eslint-disable-next-line no-console
-  console.log(pizza);
-  return pizza;
+  });
+const savePizzaInformation = () => {
+  if (editingPizzaId.value) {
+    const pizzaIndex = pizzas.value.findIndex((pizzaItem) =>
+      pizzaItem.id === editingPizzaId.value,
+    );
+    pizzas.value.splice(pizzaIndex, 1, createPizzaInformation());
+  } else {
+    pizzas.value.push(createPizzaInformation());
+  }
+  router.push({ name: RouteName.CART });
 };
-
+const declineSavePizzaInformation = () => {
+  router.push({ name: RouteName.CART });
+};
+onBeforeMount(() => {
+  if (editingPizzaId.value) {
+    const pizzaItem = pizzas.value.find((pizza) =>
+      pizza.id === editingPizzaId.value,
+    );
+    selectedSauce.value = Object.values(pizzaParts.value.sauces).find((sauce) =>
+      pizzaItem.sauceId === sauce.id,
+    );
+    selectedDough.value = Object.values(pizzaParts.value.dough).find((dough) =>
+      pizzaItem.doughId === dough.id,
+    );
+    selectedSize.value = Object.values(pizzaParts.value.sizes).find((size) =>
+      pizzaItem.sizeId === size.id,
+    );
+    pizzaName.value = pizzaItem.name;
+    pizzaItem.ingredients.map((ingredientItem) => {
+      Object.values(fillingItems.value).find((ingredient) =>
+        ingredient.ingredientId === ingredientItem.ingredientId).quantity
+        = ingredientItem.quantity;
+    });
+  }
+});
+onBeforeUnmount(() => {
+  editingPizzaId.value = '';
+});
 </script>
 
 <style scoped lang="scss">
@@ -238,7 +282,7 @@ const getPizzaInformation = () => {
 
 .content__result {
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
 
   margin-top: 25px;
@@ -253,5 +297,23 @@ const getPizzaInformation = () => {
     margin-left: 12px;
     padding: 16px 45px;
   }
+}
+
+.pizza-price {
+  padding-top: 10px;
+}
+.button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+.button--send {
+  margin: 0 auto;
+}
+.button--decline {
+  width: 180px;
+  margin-top: 20px;
+  background-color: grey;
 }
 </style>

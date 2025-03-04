@@ -12,17 +12,17 @@
         <h2>{{ pizza.name }}</h2>
         <ul>
           <li>
-            {{ sizes[pizza.sizeId].name }}, на
+            {{ pizzaParts.sizes[pizza.sizeId].name }}, на
             {{ doughNameRu[pizza.doughId] }} тесте
           </li>
-          <li>Соус: {{ sauces[pizza.sauceId].name }}</li>
+          <li>Соус: {{ pizzaParts.sauces[pizza.sauceId].name }}</li>
           <li>
             Начинка:
             <template
               v-for="ingredient in pizza.ingredients"
               :key="ingredient.id"
             >
-              {{ ingredients[ingredient.ingredientId].name }},
+              {{ pizzaParts.ingredients[ingredient.ingredientId].name }},
             </template>
           </li>
         </ul>
@@ -39,32 +39,17 @@
 
 <script setup>
 import doughNameRu from '@/common/data/dough-name-ru';
-defineProps({
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+import { calculatePizzaPrice } from '@/common/helpers';
+const { pizzaParts } = storeToRefs(useCartStore());
+const props = defineProps({
   pizza: {
     type: Object,
     required: true,
   },
-  ingredients: {
-    type: Object,
-    required: true,
-  },
-  dough: {
-    type: Object,
-    required: true,
-  },
-  sauces: {
-    type: Object,
-    required: true,
-  },
-  sizes: {
-    type: Object,
-    required: true,
-  },
-  pizzaPrice: {
-    type: Number,
-    required: true,
-  },
 });
+const pizzaPrice = calculatePizzaPrice(props.pizza, pizzaParts.value);
 </script>
 
 <style scoped lang="scss">

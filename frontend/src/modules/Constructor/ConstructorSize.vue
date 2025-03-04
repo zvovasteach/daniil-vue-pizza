@@ -32,7 +32,7 @@ defineProps({
     required: true,
   },
   sizeItems: {
-    type: Array,
+    type: Object,
     required: true,
   },
 });

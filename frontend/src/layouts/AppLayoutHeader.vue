@@ -11,7 +11,9 @@
       </router-link>
     </div>
     <div class="header__cart">
-      <router-link :to="{ name: RouteName.CART}">0 ₽</router-link>
+      <router-link :to="{ name: RouteName.CART}">
+        {{ totalOrderPrice }} ₽
+      </router-link>
     </div>
     <div class="header__user">
       <router-link :to="{ name: RouteName.SIGN_IN}" class="header__login"><span>Войти</span></router-link>
@@ -21,6 +23,9 @@
 
 <script setup>
 import { RouteName } from '@/common/constants';
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
+const { totalOrderPrice } = storeToRefs(useCartStore());
 </script>
 
 <style scoped lang="scss">

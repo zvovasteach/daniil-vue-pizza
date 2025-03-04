@@ -25,15 +25,10 @@
             v-for="pizza in pizzasCart"
             :key="pizza.id"
             :pizza="pizza"
-            :ingredients="adaptIngredients"
-            :dough="adaptDough"
-            :sauces="adaptSauces"
-            :sizes="adaptSizes"
-            :pizza-price="calculatePizzaPrice(pizza, pizzaParts)"
           />
         </ul>
         <ul class="order__additional">
-          <OrderAddtional
+          <OrderAdditional
             v-for="misc in miscCart"
             :key="misc.miscId"
             :misc="misc"
@@ -48,44 +43,33 @@
 
 <script setup>
 import OrderPizza from '@/modules/Orders/OrderPizza.vue';
-import OrderAddtional from '@/modules/Orders/OrderAddtional.vue';
+import OrderAdditional from '@/modules/Orders/OrderAdditional.vue';
 import cartValue from '@/mocks/cartValue.json';
 import { computed, ref } from 'vue';
-import ingredients from '@/mocks/ingredients.json';
-import dough from '@/mocks/dough.json';
-import sauces from '@/mocks/sauces.json';
-import sizes from '@/mocks/sizes.json';
 import { calculatePizzaPrice } from '@/common/helpers';
 import miscJSON from '@/mocks/misc.json';
 import { normalizeMisc } from '@/common/helpers/normalize';
+import { adaptToClient } from '@/common/helpers';
+import { storeToRefs } from 'pinia';
+import { useCartStore } from '@/stores/cart';
 
+const { pizzaParts } = storeToRefs(useCartStore());
 const pizzasCart = ref(cartValue.pizzas);
 const miscCart = ref(cartValue.misc);
 const address = ref(cartValue.address);
-const adaptToClient = (array) => Object.values(array).reduce((acc, item) => {
-  acc[item.id] = item;
-  return acc;
-}, {});
+
 const miscItems = ref(adaptToClient(miscJSON.map(normalizeMisc)));
-const adaptIngredients = adaptToClient(ingredients);
-const adaptDough = adaptToClient(dough);
-const adaptSauces = adaptToClient(sauces);
-const adaptSizes = adaptToClient(sizes);
-const pizzaParts = {
-  ingredients: adaptIngredients,
-  sizes: adaptSizes,
-  doughs: adaptDough,
-  sauces: adaptSauces,
-};
-const totalPizzaPrice = computed(() => pizzasCart.value.reduce(
-  (acc, pizza) => acc + calculatePizzaPrice(pizza, pizzaParts) * pizza.quantity,
+const totalPizzaPrice = computed(() =>
+  pizzasCart.value.reduce((acc, pizza) =>
+    acc + calculatePizzaPrice(pizza, pizzaParts.value) * pizza.quantity,
   0,
-));
+  ));
 
 const totalAdditionalItemPrice = computed(() =>
   Object.values(miscCart.value).reduce(
     (acc, misc) => acc + misc.quantity * miscItems.value[misc.miscId].price,
-    0));
+    0,
+  ));
 </script>
 
 <style scoped lang="scss">

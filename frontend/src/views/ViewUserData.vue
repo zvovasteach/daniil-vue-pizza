@@ -36,15 +36,14 @@ import UserAvailableAddress from '@/modules/UserData/UserAvailableAddress.vue';
 import UserFormNewAddress from '@/modules/UserData/UserFormNewAddress.vue';
 import { ref } from 'vue';
 import { validateFields } from '@/common/validator';
-const userAddress = ref([
-  {
-    name: 'TestName',
-    userId: 'testID',
-    street: 'Ulica',
-    building: 'Dom',
-    flat: 'Kvartira',
-    comment: 'Comments',
-  },
+const userAddress = ref([{
+  name: 'TestName',
+  userId: 'testID',
+  street: 'Ulica',
+  building: 'Dom',
+  flat: 'Kvartira',
+  comment: 'Comments',
+},
 ]);
 const userFormAddress = ref({
   name: '',
