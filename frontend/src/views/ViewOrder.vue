@@ -68,7 +68,8 @@ const totalPizzaPrice = computed(() =>
 const totalAdditionalItemPrice = computed(() =>
   Object.values(miscCart.value).reduce(
     (acc, misc) => acc + misc.quantity * miscItems.value[misc.miscId].price,
-    0));
+    0,
+  ));
 </script>
 
 <style scoped lang="scss">

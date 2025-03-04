@@ -117,7 +117,8 @@ const pizzaPrice = computed(() => calculatePizzaPrice(
     doughId: selectedDough.value.id,
     sauceId: selectedSauce.value.id,
   },
-  pizzaParts.value));
+  pizzaParts.value,
+));
 const createPizzaInformation = () =>
   ({
     name: pizzaName.value,
@@ -125,17 +126,17 @@ const createPizzaInformation = () =>
     doughId: selectedDough.value.id,
     sizeId: selectedSize.value.id,
     quantity: 1,
-    ingredients: Object.values(selectedItems.value).map((item) => (
-      {
-        ingredientId: item.ingredientId,
-        quantity: item.quantity,
-      })),
+    ingredients: Object.values(selectedItems.value).map((item) => ({
+      ingredientId: item.ingredientId,
+      quantity: item.quantity,
+    })),
     id: uniqueId(),
   });
 const savePizzaInformation = () => {
   if (editingPizzaId.value) {
     const pizzaIndex = pizzas.value.findIndex((pizzaItem) =>
-      pizzaItem.id === editingPizzaId.value);
+      pizzaItem.id === editingPizzaId.value,
+    );
     pizzas.value.splice(pizzaIndex, 1, createPizzaInformation());
   } else {
     pizzas.value.push(createPizzaInformation());
@@ -148,13 +149,17 @@ const declineSavePizzaInformation = () => {
 onBeforeMount(() => {
   if (editingPizzaId.value) {
     const pizzaItem = pizzas.value.find((pizza) =>
-      pizza.id === editingPizzaId.value);
+      pizza.id === editingPizzaId.value,
+    );
     selectedSauce.value = Object.values(pizzaParts.value.sauces).find((sauce) =>
-      pizzaItem.sauceId === sauce.id);
+      pizzaItem.sauceId === sauce.id,
+    );
     selectedDough.value = Object.values(pizzaParts.value.dough).find((dough) =>
-      pizzaItem.doughId === dough.id);
+      pizzaItem.doughId === dough.id,
+    );
     selectedSize.value = Object.values(pizzaParts.value.sizes).find((size) =>
-      pizzaItem.sizeId === size.id);
+      pizzaItem.sizeId === size.id,
+    );
     pizzaName.value = pizzaItem.name;
     pizzaItem.ingredients.map((ingredientItem) => {
       Object.values(fillingItems.value).find((ingredient) =>
