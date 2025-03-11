@@ -45,19 +45,19 @@
 import OrderPizza from '@/modules/Orders/OrderPizza.vue';
 import OrderAdditional from '@/modules/Orders/OrderAdditional.vue';
 import cartValue from '@/mocks/cartValue.json';
-import { computed, ref } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import { calculatePizzaPrice } from '@/common/helpers';
 import miscJSON from '@/mocks/misc.json';
 import { normalizeMisc } from '@/common/helpers/normalize';
 import { adaptToClient } from '@/common/helpers';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
-
+import { useOrdersStore } from '@/stores/orders.js';
+const { getOrders } = useOrdersStore();
 const { pizzaParts } = storeToRefs(useCartStore());
 const pizzasCart = ref(cartValue.pizzas);
 const miscCart = ref(cartValue.misc);
 const address = ref(cartValue.address);
-
 const miscItems = ref(adaptToClient(miscJSON.map(normalizeMisc)));
 const totalPizzaPrice = computed(() =>
   pizzasCart.value.reduce((acc, pizza) =>
@@ -70,6 +70,9 @@ const totalAdditionalItemPrice = computed(() =>
     (acc, misc) => acc + misc.quantity * miscItems.value[misc.miscId].price,
     0,
   ));
+onBeforeMount(() => {
+  getOrders();
+});
 </script>
 
 <style scoped lang="scss">

@@ -1,4 +1,5 @@
 import { RouteName, AppLayout } from '@/common/constants';
+import { useUserStore } from '@/stores/user.js';
 export default [
   {
     path: '/:catchAll(.*)*',
@@ -8,13 +9,13 @@ export default [
     path: '/',
     name: RouteName.HOME,
     component: () => import('../views/ViewHome.vue'),
-    meta: { layout: AppLayout.MAIN },
+    meta: { layout: AppLayout.MAIN, public: true },
   },
   {
     path: '/cart',
     name: RouteName.CART,
     component: () => import('../views/ViewCart.vue'),
-    meta: { layout: AppLayout.MAIN },
+    meta: { layout: AppLayout.MAIN, public: true },
   },
   {
     path: '/orders',
@@ -27,6 +28,16 @@ export default [
     name: RouteName.SIGN_IN,
     component: () => import('../views/ViewSignIn.vue'),
     meta: { layout: AppLayout.DEFAULT },
+    beforeEnter: (to, from, next) => {
+      const userStore = useUserStore();
+      if (userStore.isAuthenticated === false) {
+        next();
+        return true;
+      } else {
+        next({ name: RouteName.HOME });
+        return false;
+      }
+    },
   },
   {
     path: '/user',

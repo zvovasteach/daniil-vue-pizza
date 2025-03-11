@@ -56,6 +56,8 @@ import CartMainItem from '@/modules/Cart/CartMainItem.vue';
 import { ref, useTemplateRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
+// import { useOrderStore } from '@/stores/orders';
+const { postOrder } = useCartStore();
 const { pizzas, misc } = storeToRefs(useCartStore());
 import { orderType } from '@/common/constants';
 
@@ -88,6 +90,7 @@ const getOrderData = () => {
 const form = useTemplateRef('form');
 const createOrder = () => {
   if (form.value.validate()) {
+    postOrder();
     // eslint-disable-next-line no-console
     console.log(getOrderData());
   }

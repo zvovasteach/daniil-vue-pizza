@@ -1,12 +1,88 @@
 <template>
-  <UserMain v-if="!isLoading" />
+  <main class="layout">
+    <div class="layout__content">
+      <div class="layout__title">
+        <h1 class="title title--big">Мои данные</h1>
+      </div>
+      <UserInfo />
+
+      <div class="layout__address">
+        <UserAvailableAddress
+          v-for="address in userAddress"
+          :key="address.id"
+          :user-address="address"
+        />
+      </div>
+
+      <div class="layout__address">
+        <UserFormNewAddress
+          v-model="userFormAddress"
+          :validations="validations"
+          :address-number="userAddress.length"
+          @send-user-form-address="validateUserForm"
+        />
+      </div>
+
+      <div class="layout__button">
+        <button type="button" class="button button--border">Добавить новый адрес</button>
+      </div>
+    </div>
+  </main>
 </template>
 
 <script setup>
-import UserMain from '@/modules/UserData/UserMain.vue';
-import { useUserStore } from '@/stores/user.js';
-import { storeToRefs } from 'pinia';
-const { isLoading } = storeToRefs(useUserStore());
+import UserInfo from '@/modules/UserData/UserInfo.vue';
+import UserAvailableAddress from '@/modules/UserData/UserAvailableAddress.vue';
+import UserFormNewAddress from '@/modules/UserData/UserFormNewAddress.vue';
+import { ref } from 'vue';
+import { validateFields } from '@/common/validator';
+const userAddress = ref([{
+  name: 'TestName',
+  userId: 'testID',
+  street: 'Ulica',
+  building: 'Dom',
+  flat: 'Kvartira',
+  comment: 'Comments',
+},
+]);
+const userFormAddress = ref({
+  name: '',
+  userId: 'testID',
+  street: '',
+  building: '',
+  flat: '',
+  comment: '',
+},
+);
+const validations = ref({
+  addressBuilding: {
+    error: '',
+    rules: ['required'],
+  },
+  addressStreet: {
+    error: '',
+    rules: ['required'],
+  },
+  name: {
+    error: '',
+    rules: ['required'],
+  },
+});
+const validateUserForm = () => {
+  if (validateFields({
+    addressStreet: userFormAddress.value.street,
+    addressBuilding: userFormAddress.value.building,
+    name: userFormAddress.value.name,
+  },
+  {
+    addressBuilding: validations.value.addressBuilding,
+    addressStreet: validations.value.addressStreet,
+    name: validations.value.name,
+  })) {
+    // eslint-disable-next-line no-console
+    console.log(userFormAddress.value);
+  }
+};
 </script>
 
 <style scoped lang="scss">

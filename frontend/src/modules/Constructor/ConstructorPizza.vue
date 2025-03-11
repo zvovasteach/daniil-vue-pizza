@@ -40,8 +40,8 @@ defineProps({
 });
 const fillingItems = defineModel({ type: Object });
 const increaseFillingCount = (ingredientItem) => {
-  if (fillingItems.value[ingredientItem].count < MAX_FILLING_COUNT) {
-    fillingItems.value[ingredientItem].count++;
+  if (fillingItems.value[ingredientItem].quantity < MAX_FILLING_COUNT) {
+    fillingItems.value[ingredientItem].quantity++;
   }
 };
 </script>
