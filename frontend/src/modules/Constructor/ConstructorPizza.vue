@@ -8,7 +8,7 @@
           <div
             v-for="(value, key) in selectedItems"
             :key="key"
-            :class="['pizza__filling', `pizza__filling--${key}`, {'pizza__filling--second' : value.count === 2}, {'pizza__filling--third' : value.count === 3}]"
+            :class="['pizza__filling', `pizza__filling--${key}`, {'pizza__filling--second' : value.quantity === 2}, {'pizza__filling--third' : value.quantity === 3}]"
           ></div>
         </div>
       </div>

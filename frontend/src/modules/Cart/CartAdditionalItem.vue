@@ -15,7 +15,7 @@
         <AppCounter
           :model-value="miscItem.quantity"
           orange
-          @update:model-value="updateAdditionalItem(miscItem.id, $event)"
+          @update:model-value="updateAdditionalItemCount(miscItem.id, $event)"
         />
       </div>
 
@@ -38,7 +38,7 @@ defineProps({
     required: true,
   },
 });
-const updateAdditionalItem = (name, value) => {
+const updateAdditionalItemCount = (name, value) => {
   const newValue = Number(value);
 
   if (newValue < 0) {

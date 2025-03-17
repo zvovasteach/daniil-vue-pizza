@@ -17,6 +17,8 @@ export const useCartStore = defineStore('cart', () => {
     sauces: null,
     sizes: null,
   });
+  const misc = ref([]);
+  const editingPizzaId = ref('');
   const isIngredientsLoading = ref(true);
   const isDoughLoading = ref(true);
   const isSaucesLoading = ref(true);
@@ -28,11 +30,9 @@ export const useCartStore = defineStore('cart', () => {
       const response = await pizzaApi.getIngredients();
       pizzaParts.value.ingredients = adaptToClient(response, ingredientsData);
       isIngredientsLoading.value = false;
-      // console.log(pizzaParts.value.ingredients);
     } catch (error) {
       isError.value = true;
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
   const getDoughItems = async () => {
@@ -40,11 +40,9 @@ export const useCartStore = defineStore('cart', () => {
       const response = await pizzaApi.getDough();
       pizzaParts.value.dough = adaptToClient(response, doughData);
       isDoughLoading.value = false;
-      // console.log(pizzaParts.value.dough);
     } catch (error) {
       isError.value = true;
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
   const getSaucesItems = async () => {
@@ -52,11 +50,9 @@ export const useCartStore = defineStore('cart', () => {
       const response = await pizzaApi.getSauces();
       pizzaParts.value.sauces = adaptToClient(response, saucesData);
       isSaucesLoading.value = false;
-      // console.log(pizzaParts.value.sauces);
     } catch (error) {
       isError.value = true;
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
   const getSizesItems = async () => {
@@ -64,33 +60,25 @@ export const useCartStore = defineStore('cart', () => {
       const response = await pizzaApi.getSizes();
       pizzaParts.value.sizes = adaptToClient(response, sizesData);
       isSizesLoading.value = false;
-      // console.log(pizzaParts.value.sizes);
     } catch (error) {
       isError.value = true;
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
-  // const miscTest = ref(adaptToClient(miscJSON.map(normalizeMisc)));
-  // console.log(111,miscTest.value)
-  const misc = ref([]);
   const getMiscItems = async () => {
     try {
       const response = await pizzaApi.getMisc();
       misc.value = adaptToClient(response.map(normalizeMisc));
-      // console.log(222,misc.value)
       isMiscLoading.value = false;
     } catch (error) {
       isError.value = true;
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
-  const editingPizzaId = ref('');
   const totalOrderPrice = computed(() => {
-    if (isIngredientsLoading.value && isSaucesLoading.value
-      && isSizesLoading.value && isDoughLoading.value
-      && isMiscLoading) {
+    if (isIngredientsLoading.value || isSaucesLoading.value
+      || isSizesLoading.value || isDoughLoading.value
+      || isMiscLoading.value) {
       return 0;
     }
     const totalPizzaPrice = pizzas.value.reduce(

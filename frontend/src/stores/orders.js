@@ -4,23 +4,9 @@ import { orderApi } from '@/api/order-api.js';
 
 export const useOrdersStore = defineStore('orders', () => {
   const orders = ref([]);
-  const postOrder = async () => {
-    try {
-      await orderApi.postOrderInfo();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
-  };
+  const isOrderRepeat = ref(false);
   const getOrders = async () => {
-    try {
-      orders.value = await orderApi.getOrderInfo();
-      // eslint-disable-next-line no-console
-      console.log(orders.value);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
-    }
+    orders.value = await orderApi.getOrderInfo();
   };
-  return { orders, getOrders, postOrder };
+  return { orders, getOrders, isOrderRepeat };
 });

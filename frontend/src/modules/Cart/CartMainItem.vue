@@ -76,14 +76,14 @@ const props = defineProps({
   },
 });
 const pizzaPrice = computed (() => {
-  if (isIngredientsLoading.value && isSaucesLoading.value
-    && isSizesLoading.value && isDoughLoading.value
-    && isMiscLoading) {
+  if (isIngredientsLoading.value || isSaucesLoading.value
+    || isSizesLoading.value || isDoughLoading.value
+    || isMiscLoading.value) {
     return 0;
   }
   return calculatePizzaPrice(props.pizza, pizzaParts.value);
 });
-// const pizzaPrice = calculatePizzaPrice(props.pizza, pizzaParts.value);
+
 const editPizza = (pizza) => {
   editingPizzaId.value = pizza.id;
   router.push({ name: RouteName.HOME });

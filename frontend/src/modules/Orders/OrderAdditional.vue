@@ -1,7 +1,7 @@
 <template>
   <li>
     <img
-      :src="getImage(`${miscItems[misc.miscId].image}.svg`)"
+      :src="getPublicImage(miscItems[misc.miscId].image)"
       width="20"
       height="30"
       :alt="miscItems[misc.miscId].name"
@@ -14,8 +14,7 @@
 </template>
 
 <script setup>
-import { getImage } from '@/common/helpers';
-
+import { getPublicImage } from '@/common/helpers';
 defineProps({
   miscItems: {
     type: Object,

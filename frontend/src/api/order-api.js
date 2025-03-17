@@ -1,14 +1,14 @@
 import { base } from '@/axios-api';
 
 const orderApi = {
-  postOrderInfo: async (order) => {
+  postOrderInfo: async (data) => {
     try {
-      const response = await base.post('/orders', { order });
+      const response = await base.post('/orders', data);
       // eslint-disable-next-line no-console
       console.log(response.data);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
+      throw error;
     }
   },
   getOrderInfo: async () => {
@@ -17,10 +17,20 @@ const orderApi = {
       // eslint-disable-next-line no-console
       console.log(response);
       return response.data;
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+  deleteOrderInfo: async (id) => {
+    try {
+      const response = await base.delete(`/orders/${id}`);
       // eslint-disable-next-line no-console
-      console.log(err);
-      throw err;
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   },
 };

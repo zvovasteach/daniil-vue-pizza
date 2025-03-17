@@ -49,7 +49,7 @@
             <div class="button-wrapper">
               <AppButton
                 class="button--send"
-                :disabled="!pizzaName"
+                :disabled="!pizzaName || isLoading"
                 @click="savePizzaInformation"
               >
                 {{ editingPizzaId ? "Сохранить" : "Готовьте!" }}
@@ -57,7 +57,7 @@
               <AppButton
                 v-if="editingPizzaId"
                 class="button--decline"
-                :disabled="!pizzaName"
+                :disabled="!pizzaName || isLoading"
                 @click="declineSavePizzaInformation"
               >
                 Отмена
@@ -86,19 +86,11 @@ import { RouteName } from '@/common/constants';
 import router from '@/router';
 import { calculatePizzaPrice } from '@/common/helpers';
 const { editingPizzaId, pizzas, pizzaParts } = storeToRefs(useCartStore());
-// console.log(1111, pizzaParts.value.sauces[1])
 const selectedSauce = ref(pizzaParts.value.sauces[1]);
-// console.log(pizzaParts.value)
 const selectedDough = ref(pizzaParts.value.dough[1]);
-// const lowMultiplierSize = Object.values(pizzaParts.value.sizes).filter((size) => size.multiplier === 1);
-// console.log(2222,lowMultiplierSize);
-// console.log(1111,pizzaParts.value.sizes[1])
 const selectedSize = ref(pizzaParts.value.sizes[1]);
 const pizzaName = ref('');
 const ingredientsFilling = ref(pizzaParts.value.ingredients);
-// eslint-disable-next-line no-console
-console.log(pizzaParts.value.sizes);
-// console.log(ingredientsFilling.value);
 const fillingItems = ref(
   Object.values(ingredientsFilling.value).reduce((acc, curr) => {
     acc[curr.value] = {
@@ -140,7 +132,9 @@ const createPizzaInformation = () =>
     })),
     id: uniqueId(),
   });
+const isLoading = ref(false);
 const savePizzaInformation = () => {
+  isLoading.value = true;
   if (editingPizzaId.value) {
     const pizzaIndex = pizzas.value.findIndex((pizzaItem) =>
       pizzaItem.id === editingPizzaId.value,
@@ -152,6 +146,7 @@ const savePizzaInformation = () => {
   router.push({ name: RouteName.CART });
 };
 const declineSavePizzaInformation = () => {
+  isLoading.value = true;
   router.push({ name: RouteName.CART });
 };
 onBeforeMount(() => {
@@ -178,6 +173,7 @@ onBeforeMount(() => {
 });
 onBeforeUnmount(() => {
   editingPizzaId.value = '';
+  isLoading.value = false;
 });
 </script>
 

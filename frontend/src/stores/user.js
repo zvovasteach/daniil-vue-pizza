@@ -8,26 +8,33 @@ export const useUserStore = defineStore('user', () => {
   const token = ref(getToken());
   const isAuthenticated = computed (() => !!token.value);
   const isLoading = ref(true);
+  const address = ref(null);
+  const editingAddressId = ref(null);
   const getUserInfo = async () => {
     try {
       user.value = await loginApi.whoAmI();
       isLoading.value = false;
-      // console.log(user.value);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
     }
   };
-  // TODO: Сделать кетчеры под каждый запрос к серверу
   const getUserToken = async (email, password) => {
     token.value = await loginApi.login(email, password);
     await getUserInfo();
     // eslint-disable-next-line no-console
     console.log(token.value);
   };
+  const getAddressInfo = async () => {
+    try {
+      address.value = await loginApi.getAddress();
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const $resetUserStore = () => {
     user.value = '';
     token.value = '';
   };
-  return { user, isAuthenticated, getUserToken, getUserInfo, $resetUserStore };
+  return { user, isAuthenticated, getUserToken, getUserInfo,
+    $resetUserStore, getAddressInfo, editingAddressId, address, isLoading };
 });

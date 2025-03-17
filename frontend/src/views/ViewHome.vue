@@ -13,12 +13,12 @@ const { isError } = storeToRefs(useCartStore());
 </script>
 
 <style scoped lang="scss">
-.text-field__error {
+.text-field-error {
   color: red;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 24px;
+  line-height: 32px;
   font-weight: 400;
-  position: absolute;
-  width: 230px;
+  margin: auto auto;
+  width: 480px;
 }
 </style>

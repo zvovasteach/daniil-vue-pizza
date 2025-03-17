@@ -1,7 +1,8 @@
 <template>
   <form action="" method="post" class="address-form address-form--opened sheet">
     <div class="address-form__header">
-      <b>Адрес №{{ addressNumber + 1 }}</b>
+      <b v-if="editingAddressId">{{ userFormAddress.name }}</b>
+      <b v-else>Адрес № {{ address.length + 1 }}</b>
     </div>
 
     <div class="address-form__wrapper">
@@ -54,7 +55,23 @@
     </div>
 
     <div class="address-form__buttons">
-      <button type="button" class="button button--transparent">Удалить</button>
+      <button
+        v-if="showAddressForm"
+        type="button"
+        class="button button--transparent button--decline"
+        @click="cancelAddressForm"
+      >
+        Отмена
+      </button>
+      <span v-if="isError" class="text-field__error">Используемый адрес нельзя удалить</span>
+      <button
+        v-if="editingAddressId"
+        type="button"
+        class="button button--transparent"
+        @click="deleteUserAddress()"
+      >
+        Удалить
+      </button>
       <button
         type="submit"
         class="button"
@@ -68,25 +85,66 @@
 
 <script setup>
 import AppInput from '@/common/components/AppInput.vue';
+import { loginApi } from '@/api/user-api.js';
+import { useUserStore } from '@/stores/user.js';
+import { useOrdersStore } from '@/stores/orders.js';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+const { editingAddressId, address } = storeToRefs(useUserStore());
+const { orders } = storeToRefs(useOrdersStore());
+const { getAddressInfo } = useUserStore();
 
-const userFormAddress = defineModel({ type: Object });
+const userFormAddress = defineModel('userFormAddress', { type: Object });
+const showAddressForm = defineModel('showAddressForm', { type: Boolean });
 defineEmits(['sendUserFormAddress']);
 defineProps({
   validations: {
     type: Object,
     required: true,
   },
-  addressNumber: {
-    type: Number,
-    required: true,
-  },
 });
+const cancelAddressForm = () => {
+  showAddressForm.value = false;
+  userFormAddress.value.name = '';
+  userFormAddress.value.street = '';
+  userFormAddress.value.building = '';
+  userFormAddress.value.flat = '';
+  userFormAddress.value.comment = '';
+  editingAddressId.value = '';
+};
+const isError = ref(false);
+const deleteUserAddress = async () => {
+  isError.value = false;
+  const isAddressActive = orders.value.find((order) =>
+    order.addressId === editingAddressId.value);
+  if (!isAddressActive) {
+    userFormAddress.value.name = '';
+    userFormAddress.value.street = '';
+    userFormAddress.value.building = '';
+    userFormAddress.value.flat = '';
+    userFormAddress.value.comment = '';
+    await loginApi.deleteAddress(editingAddressId.value);
+    await getAddressInfo();
+    showAddressForm.value = false;
+    editingAddressId.value = '';
+  } else {
+    isError.value = true;
+  }
+};
 </script>
 
 <style scoped lang="scss">
 @use "@/assets/scss/ds-system/ds-colors";
 @use "@/assets/scss/ds-system/ds-typography";
 
+.text-field__error {
+  color: red;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  margin-top: 20px;
+  width: 230px;
+}
 //address styles
 
 .address-form {
@@ -225,5 +283,7 @@ defineProps({
     }
   }
 }
-
+.button--decline {
+  background-color: grey;
+}
 </style>

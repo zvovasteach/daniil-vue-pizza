@@ -10,14 +10,18 @@
           class="select"
         >
 
-          <option value="1">Заберу сам</option>
-          <option value="2">Новый адрес</option>
-          <option value="3">Дом</option>
+          <option value="-1">Заберу сам</option>
+          <option value="-2">Новый адрес</option>
+          <option
+            v-for="addressItem in address"
+            :key="addressItem.id"
+            :value="addressItem.id"
+          >
+            {{ addressItem.name }}
+          </option>
         </select>
       </label>
       <label
-        v-if="formData.orderType === orderType.NEW_ADDRESS
-          || formData.orderType === orderType.BY_YOURSELF"
         class="input input--big-label"
       >
         <span>Контактный телефон:</span>
@@ -32,10 +36,21 @@
         />
       </label>
       <div
-        v-if="formData.orderType === orderType.NEW_ADDRESS"
+        v-if="formData.orderType !== orderType.BY_YOURSELF"
         class="cart-form__address"
       >
-        <span class="cart-form__label">Новый адрес:</span>
+        <span
+          v-if="formData.orderType === orderType.NEW_ADDRESS"
+          class="cart-form__label"
+        >
+          Новый адрес:
+        </span>
+        <span
+          v-else
+          class="cart-form__label"
+        >
+          Адрес:
+        </span>
         <div class="cart-form__input">
           <label class="input">
             <AppInput
@@ -43,6 +58,7 @@
               :error="validations.addressStreet.error"
               label="Улица*"
               input-name="street"
+              :disabled="formData.orderType !== orderType.NEW_ADDRESS && formData.orderType !== orderType.BY_YOURSELF"
             />
           </label>
         </div>
@@ -53,6 +69,7 @@
               :error="validations.addressBuilding.error"
               label="Дом*"
               input-name="house"
+              :disabled="formData.orderType !== orderType.NEW_ADDRESS && formData.orderType !== orderType.BY_YOURSELF"
             />
           </label>
         </div>
@@ -62,6 +79,7 @@
               v-model="formData.address.flat"
               label="Квартира"
               input-name="apartment"
+              :disabled="formData.orderType !== orderType.NEW_ADDRESS && formData.orderType !== orderType.BY_YOURSELF"
             />
           </label>
         </div>
@@ -73,8 +91,12 @@
 <script setup>
 import AppInput from '@/common/components/AppInput.vue';
 import { validateFields } from '@/common/validator';
-import { ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { orderType } from '@/common/constants';
+import { useUserStore } from '@/stores/user.js';
+import { storeToRefs } from 'pinia';
+const { address } = storeToRefs(useUserStore());
+const { getAddressInfo } = useUserStore();
 
 const formData = defineModel({ type: Object });
 const validations = ref({
@@ -114,6 +136,10 @@ const validate = () => {
 };
 
 defineExpose({ validate });
+
+onBeforeMount(() => {
+  getAddressInfo();
+});
 </script>
 
 <style scoped lang="scss">
@@ -227,7 +253,7 @@ defineExpose({ validate });
   @include ds-typography.r-s16-h19;
 
   display: block;
-
+  width: 150px;
   margin: 0;
   padding: 8px 16px;
   padding-right: 30px;

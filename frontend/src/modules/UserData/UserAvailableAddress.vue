@@ -1,26 +1,46 @@
 <template>
   <div class="sheet address-form">
     <div class="address-form__header">
-      <b>Адрес №1. {{ userAddress.name }}</b>
+      <b>{{ userAddress.name }}</b>
       <div class="address-form__edit">
-        <button type="button" class="icon"><span class="visually-hidden">Изменить адрес</span></button>
+        <button
+          type="button"
+          class="icon"
+          @click="editAvailableAddress(userAddress)"
+        >
+          <span class="visually-hidden">Изменить адрес</span>
+        </button>
       </div>
     </div>
     <p>
-      {{ userAddress.street }}, д. {{ userAddress.building }},
-      кв. {{ userAddress.flat }}
+      {{ userAddress.street }}, д. {{ userAddress.building }}
+      <span v-if="userAddress.flat">,кв. {{ userAddress.flat }}</span>
     </p>
-    <small>{{ userAddress.comment }}</small>
+    <small v-if="userAddress.comment">{{ userAddress.comment }}</small>
   </div>
 </template>
 
 <script setup>
+import { useUserStore } from '@/stores/user.js';
+import { storeToRefs } from 'pinia';
+const { editingAddressId } = storeToRefs(useUserStore());
+const showAddressForm = defineModel('showAddressForm', { type: Boolean });
+const userFormAddress = defineModel('userFormAddress', { type: Object });
 defineProps({
   userAddress: {
     type: Object,
     required: true,
   },
 });
+const editAvailableAddress = (editingAddress) => {
+  editingAddressId.value = editingAddress.id;
+  showAddressForm.value = true;
+  userFormAddress.value.name = editingAddress.name;
+  userFormAddress.value.street = editingAddress.street;
+  userFormAddress.value.building = editingAddress.building;
+  userFormAddress.value.flat = editingAddress.flat;
+  userFormAddress.value.comment = editingAddress.comment;
+};
 </script>
 
 <style scoped lang="scss">

@@ -9,8 +9,7 @@ const loginApi = {
       setToken(token);
       return token;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
       throw error;
     }
   },
@@ -19,17 +18,40 @@ const loginApi = {
       const response = await base.get('/whoAmI');
       return response.data;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
+      console.error(error);
       throw error;
     }
   },
-  // getMe: async () => {
-  //
-  // }
-  // async getMe() {
-  //   this.user = await authService.whoAmI()
-  // },
+  postAddress: async (address) => {
+    try {
+      const response = await base.post('/addresses', address);
+      // eslint-disable-next-line no-console
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+  getAddress: async () => {
+    try {
+      const response = await base.get('/addresses');
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+  deleteAddress: async (id) => {
+    try {
+      const response = await base.delete(`/addresses/${id}`);
+      // eslint-disable-next-line no-console
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 };
 
 export { loginApi };
