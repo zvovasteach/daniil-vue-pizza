@@ -3,7 +3,7 @@
     <router-view
       v-if="!isDoughLoading && !isSizesLoading &&
         !isIngredientsLoading && !isSaucesLoading &&
-        !isMiscLoading && !isLoading"
+        !isMiscLoading"
     />
   </AppLayout>
 </template>
@@ -15,7 +15,7 @@ import { onBeforeMount } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart.js';
 const { getUserInfo } = useUserStore();
-const { isAuthenticated, isLoading } = storeToRefs(useUserStore());
+const { isAuthenticated } = storeToRefs(useUserStore());
 const { isIngredientsLoading, isSizesLoading,
   isDoughLoading, isSaucesLoading,
   isMiscLoading } = storeToRefs(useCartStore());
