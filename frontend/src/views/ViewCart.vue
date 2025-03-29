@@ -66,7 +66,7 @@
     </div>
     <p>Мы начали готовить Ваш заказ, скоро привезём его вам ;)</p>
     <div class="popup__button">
-      <router-link :to="{ name: isAuthenticated ? RouteName.ORDERS : RouteName.HOME}" class="button">Отлично, я жду!</router-link>
+      <router-link :to="{ name:RouteName.ORDERS}" class="button">Отлично, я жду!</router-link>
     </div>
   </div>
 </template>
@@ -146,19 +146,17 @@ const createOrder = async () => {
       return;
     }
     isLoading.value = true;
-    if (isAuthenticated.value) {
-      try {
-        errorMessage.value = '';
-        Object.values(pizzas.value).map((pizza) => delete pizza.id);
-        const order = getOrderData();
-        await orderApi.postOrderInfo(order);
-      } catch (error) {
-        errorMessage.value = 'При оформлении заказа произошла ошибка';
-        // eslint-disable-next-line no-console
-        console.log(error);
-      } finally {
-        isLoading.value = false;
-      }
+    try {
+      errorMessage.value = '';
+      Object.values(pizzas.value).map((pizza) => delete pizza.id);
+      const order = getOrderData();
+      await orderApi.postOrderInfo(order);
+    } catch (error) {
+      errorMessage.value = 'При оформлении заказа произошла ошибка';
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      isLoading.value = false;
     }
     if (!errorMessage.value) {
       isShowPopup.value = true;
