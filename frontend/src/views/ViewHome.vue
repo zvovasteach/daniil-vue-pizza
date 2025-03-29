@@ -1,8 +1,8 @@
 <template>
-  <ConstructorMain />
   <span v-if="isError" class="text-field-error">
     При загрузке данных произошла ошибка
   </span>
+  <ConstructorMain />
 </template>
 
 <script setup>

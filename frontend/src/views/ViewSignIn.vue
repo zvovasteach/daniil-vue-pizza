@@ -35,7 +35,7 @@
         type="submit"
         :disabled="isLoading || !loginData.email || !loginData.password || isError"
         class="button"
-        @click.prevent="validateLogin"
+        @click.prevent="authorizeUser"
       >
         Авторизоваться
       </button>
@@ -73,7 +73,7 @@ const isError = ref(false);
 watch(loginData, () => {
   isError.value = false;
 }, { deep: true });
-const validateLogin = async () => {
+const authorizeUser = async () => {
   if (validateFields({
     email: loginData.value.email,
     password: loginData.value.password,

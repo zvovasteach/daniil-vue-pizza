@@ -10,8 +10,8 @@
           class="select"
         >
 
-          <option value="-1">Заберу сам</option>
-          <option value="-2">Новый адрес</option>
+          <option value="by_yourself">Заберу сам</option>
+          <option value="new_address">Новый адрес</option>
           <option
             v-for="addressItem in address"
             :key="addressItem.id"
@@ -95,7 +95,7 @@ import { onBeforeMount, ref } from 'vue';
 import { orderType } from '@/common/constants';
 import { useUserStore } from '@/stores/user.js';
 import { storeToRefs } from 'pinia';
-const { address } = storeToRefs(useUserStore());
+const { address, isAuthenticated } = storeToRefs(useUserStore());
 const { getAddressInfo } = useUserStore();
 
 const formData = defineModel({ type: Object });
@@ -138,7 +138,9 @@ const validate = () => {
 defineExpose({ validate });
 
 onBeforeMount(() => {
-  getAddressInfo();
+  if (isAuthenticated.value) {
+    getAddressInfo();
+  }
 });
 </script>
 

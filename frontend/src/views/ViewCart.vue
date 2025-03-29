@@ -1,6 +1,6 @@
 <template>
   <form
-    v-if="!showPopup"
+    v-if="!isShowPopup"
     action="test.html"
     method="post"
     class="layout-form"
@@ -55,7 +55,7 @@
     />
   </form>
   <div
-    v-if="showPopup"
+    v-if="isShowPopup"
     class="popup"
   >
     <a href="#" class="close">
@@ -84,12 +84,12 @@ import { useUserStore } from '@/stores/user';
 import { orderType, RouteName } from '@/common/constants';
 const { pizzas, misc } = storeToRefs(useCartStore());
 const { isAuthenticated, user, address } = storeToRefs(useUserStore());
-const { getMiscItems } = useCartStore();
 import { orderApi } from '@/api/order-api.js';
+import router from '@/router/index.js';
 const { isIngredientsLoading, isSizesLoading,
   isDoughLoading, isSaucesLoading,
   isMiscLoading } = storeToRefs(useCartStore());
-const showPopup = ref(false);
+const isShowPopup = ref(false);
 const formData = ref({
   orderType: orderType.NEW_ADDRESS,
   phone: '',
@@ -104,10 +104,9 @@ watch(
   () => formData.value.orderType,
   (order) => {
     if (order !== orderType.NEW_ADDRESS && order !== orderType.BY_YOURSELF) {
-      const getAddressKey = () => Object.entries(address.value)
+      const addressKey = Object.entries(address.value)
         // eslint-disable-next-line no-unused-vars
         .find(([_, item]) => item.id === order)[0];
-      const addressKey = getAddressKey();
       formData.value.address = {
         street: address.value[addressKey].street,
         building: address.value[addressKey].building,
@@ -142,8 +141,12 @@ const isLoading = ref(false);
 const form = useTemplateRef('form');
 const createOrder = async () => {
   if (form.value.validate()) {
+    if (!isAuthenticated.value) {
+      await router.push({ name: RouteName.SIGN_IN });
+      return;
+    }
     isLoading.value = true;
-    if (isAuthenticated) {
+    if (isAuthenticated.value) {
       try {
         errorMessage.value = '';
         Object.values(pizzas.value).map((pizza) => delete pizza.id);
@@ -153,12 +156,13 @@ const createOrder = async () => {
         errorMessage.value = 'При оформлении заказа произошла ошибка';
         // eslint-disable-next-line no-console
         console.log(error);
+      } finally {
+        isLoading.value = false;
       }
     }
     if (!errorMessage.value) {
-      showPopup.value = true;
+      isShowPopup.value = true;
       pizzas.value = [];
-      await getMiscItems();
       isLoading.value = false;
     }
   }
