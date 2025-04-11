@@ -4,38 +4,66 @@
       <div class="layout__title">
         <h1 class="title title--big">История заказов</h1>
       </div>
-      <section class="sheet order">
+      <section
+        v-for="order in orders"
+        :key="order.id"
+        class="sheet order"
+      >
         <div class="order__wrapper">
           <div class="order__number">
-            <b>Заказ #11199929</b>
+            <b>Заказ #{{ order.id }}</b>
           </div>
           <div class="order__sum">
             <span>Сумма заказа:
-              {{ totalPizzaPrice + totalAdditionalItemPrice }} ₽</span>
+              {{ totalPizzaPrice(order.orderPizzas) +
+                totalAdditionalItemPrice(order.orderMisc) }} ₽</span>
           </div>
           <div class="order__button">
-            <button type="button" class="button button--border">Удалить</button>
+            <button
+              type="button"
+              class="button button--border"
+              @click="deleteOrder(order.id)"
+            >
+              Удалить
+            </button>
           </div>
           <div class="order__button">
-            <button type="button" class="button">Повторить</button>
+            <button
+              type="button"
+              class="button"
+              @click="repeatOrder(order)"
+            >
+              Повторить
+            </button>
           </div>
         </div>
         <ul class="order__list">
           <OrderPizza
-            v-for="pizza in pizzasCart"
+            v-for="pizza in order.orderPizzas"
             :key="pizza.id"
             :pizza="pizza"
           />
         </ul>
         <ul class="order__additional">
           <OrderAdditional
-            v-for="misc in miscCart"
-            :key="misc.miscId"
-            :misc="misc"
-            :misc-items="miscItems"
+            v-for="miscItem in order.orderMisc"
+            :key="miscItem.miscId"
+            :misc="miscItem"
+            :misc-items="misc"
           />
         </ul>
-        <p class="order__address">Адрес доставки: Ул. {{ address.street }}, Д. {{ address.building }}, Кв. {{ address.flat }}. {{ address.comment }}</p>
+        <p
+          v-if="order.orderAddress"
+          class="order__address"
+        >
+          Адрес доставки:
+          Ул. {{ order.orderAddress.street }},
+          Д. {{ order.orderAddress.building }}
+          <span v-if="order.orderAddress.flat">
+            ,Кв. {{ order.orderAddress.flat }}.
+          </span>
+          {{ order.orderAddress.comment }}
+        </p>
       </section>
     </div>
   </main>
@@ -44,32 +72,60 @@
 <script setup>
 import OrderPizza from '@/modules/Orders/OrderPizza.vue';
 import OrderAdditional from '@/modules/Orders/OrderAdditional.vue';
-import cartValue from '@/mocks/cartValue.json';
-import { computed, ref } from 'vue';
+import { onBeforeMount } from 'vue';
 import { calculatePizzaPrice } from '@/common/helpers';
-import miscJSON from '@/mocks/misc.json';
-import { normalizeMisc } from '@/common/helpers/normalize';
-import { adaptToClient } from '@/common/helpers';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
+import { useOrdersStore } from '@/stores/orders.js';
+import { orderApi } from '@/api/order-api.js';
+import router from '@/router/index.js';
+import { RouteName } from '@/common/constants.js';
+const { getOrders } = useOrdersStore();
+const { orders, isOrderRepeat } = storeToRefs(useOrdersStore());
+const { pizzaParts, misc, pizzas } = storeToRefs(useCartStore());
 
-const { pizzaParts } = storeToRefs(useCartStore());
-const pizzasCart = ref(cartValue.pizzas);
-const miscCart = ref(cartValue.misc);
-const address = ref(cartValue.address);
-
-const miscItems = ref(adaptToClient(miscJSON.map(normalizeMisc)));
-const totalPizzaPrice = computed(() =>
-  pizzasCart.value.reduce((acc, pizza) =>
+const totalPizzaPrice = (orderPizzas) =>
+  Object.values(orderPizzas).reduce((acc, pizza) =>
     acc + calculatePizzaPrice(pizza, pizzaParts.value) * pizza.quantity,
   0,
-  ));
-
-const totalAdditionalItemPrice = computed(() =>
-  Object.values(miscCart.value).reduce(
-    (acc, misc) => acc + misc.quantity * miscItems.value[misc.miscId].price,
-    0,
-  ));
+  );
+const totalAdditionalItemPrice = (miscs) => {
+  if (miscs) {
+    return Object.values(miscs).reduce(
+      (acc, miscItem) =>
+        acc + miscItem.quantity * misc.value[miscItem.miscId].price,
+      0,
+    );
+  } else {
+    return 0;
+  }
+};
+const deleteOrder = async (id) => {
+  await orderApi.deleteOrderInfo(id);
+  await getOrders();
+};
+const repeatOrder = (order) => {
+  isOrderRepeat.value = true;
+  pizzas.value = order.orderPizzas;
+  pizzas.value.map((pizza) => {
+    if (pizza.ingredients) {
+      pizza.ingredients.map((ingredient) => {
+        delete ingredient.id;
+        delete ingredient.pizzaId;
+      });
+    }
+    delete pizza.orderId;
+  });
+  if (order.orderMisc) {
+    Object.values(order.orderMisc).map((miscItem) => {
+      misc.value[miscItem.miscId].quantity = miscItem.quantity;
+    });
+  }
+  router.push({ name: RouteName.CART });
+};
+onBeforeMount(() => {
+  getOrders();
+});
 </script>
 
 <style scoped lang="scss">

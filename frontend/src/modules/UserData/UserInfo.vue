@@ -1,28 +1,32 @@
 <template>
   <div class="user">
-    <picture>
+    <picture v-if="!isLoading">
       <source
         type="image/webp"
-        srcset="@/assets/img/users/user5@2x.webp 1x,
-              @/assets/img/users/user5@4x.webp 2x"
+        :srcset="userImage"
       />
       <img
-        src="@/assets/img/users/user5@2x.jpg"
-        srcset="@/assets/img/users/user5@4x.jpg"
+        :src="userImage"
         alt="Василий Ложкин"
         width="72"
         height="72"
       />
     </picture>
     <div class="user__name">
-      <span>Василий Ложкин</span>
+      <span>{{ user?.name }}</span>
     </div>
-    <p class="user__phone">Контактный телефон: <span>+7 999-999-99-99</span></p>
+    <p class="user__phone">Контактный телефон: <span>{{ user?.phone }}</span></p>
   </div>
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user.js';
+import { getPublicImage } from '@/common/helpers.js';
+import { computed } from 'vue';
 
+const { user, isLoading } = storeToRefs(useUserStore());
+const userImage = computed(() => user.value?.avatar ? getPublicImage(user.value?.avatar) : '');
 </script>
 
 <style scoped lang="scss">

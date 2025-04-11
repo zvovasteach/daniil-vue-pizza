@@ -1,12 +1,113 @@
 <template>
-  <UserMain v-if="!isLoading" />
+  <main class="layout">
+    <div class="layout__content">
+      <div class="layout__title">
+        <h1 class="title title--big">Мои данные</h1>
+      </div>
+      <UserInfo />
+
+      <div class="layout__address">
+        <UserAvailableAddress
+          v-for="addressItem in address"
+          :key="addressItem.id"
+          v-model:show-address-form="showAddressForm"
+          v-model:user-form-address="userFormAddress"
+          :user-address="addressItem"
+        />
+      </div>
+
+      <div
+        v-if="showAddressForm"
+        class="layout__address"
+      >
+        <UserFormNewAddress
+          v-model:user-form-address="userFormAddress"
+          v-model:show-address-form="showAddressForm"
+          :validations="validations"
+          @send-user-form-address="createNewAddress"
+        />
+      </div>
+
+      <div class="layout__button">
+        <button
+          type="button"
+          class="button button--border"
+          @click="showAddressForm = true"
+        >
+          Добавить новый адрес
+        </button>
+      </div>
+    </div>
+  </main>
 </template>
 
 <script setup>
-import UserMain from '@/modules/UserData/UserMain.vue';
+import UserInfo from '@/modules/UserData/UserInfo.vue';
+import UserAvailableAddress from '@/modules/UserData/UserAvailableAddress.vue';
+import UserFormNewAddress from '@/modules/UserData/UserFormNewAddress.vue';
+import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { validateFields } from '@/common/validator';
+import { loginApi } from '@/api/user-api.js';
 import { useUserStore } from '@/stores/user.js';
 import { storeToRefs } from 'pinia';
-const { isLoading } = storeToRefs(useUserStore());
+const { user, editingAddressId, address } = storeToRefs(useUserStore());
+const { getAddressInfo } = useUserStore();
+
+const userFormAddress = ref({
+  name: '',
+  userId: user.value.id,
+  street: '',
+  building: '',
+  flat: '',
+  comment: '',
+},
+);
+const validations = ref({
+  addressBuilding: {
+    error: '',
+    rules: ['required'],
+  },
+  addressStreet: {
+    error: '',
+    rules: ['required'],
+  },
+  name: {
+    error: '',
+    rules: ['required'],
+  },
+});
+const showAddressForm = ref(false);
+const createNewAddress = async () => {
+  if (validateFields({
+    addressStreet: userFormAddress.value.street,
+    addressBuilding: userFormAddress.value.building,
+    name: userFormAddress.value.name,
+  },
+  {
+    addressBuilding: validations.value.addressBuilding,
+    addressStreet: validations.value.addressStreet,
+    name: validations.value.name,
+  })) {
+    if (editingAddressId.value) {
+      await loginApi.deleteAddress(editingAddressId.value);
+    }
+    await loginApi.postAddress(userFormAddress.value);
+    await getAddressInfo();
+    showAddressForm.value = false;
+    editingAddressId.value = '';
+    userFormAddress.value.name = '';
+    userFormAddress.value.street = '';
+    userFormAddress.value.building = '';
+    userFormAddress.value.flat = '';
+    userFormAddress.value.comment = '';
+  }
+};
+onBeforeMount(() => {
+  getAddressInfo();
+});
+onBeforeUnmount(() => {
+  editingAddressId.value = '';
+});
 </script>
 
 <style scoped lang="scss">

@@ -9,9 +9,19 @@
     </div>
 
     <div class="footer__submit">
+      <span v-if="errorMessage" class="text-field__error">{{ errorMessage }}</span>
+      <button
+        v-if="isOrderRepeat"
+        class="button button--decline"
+        :disabled="isPressed"
+        @click="canselOrder"
+      >
+        Отмена
+      </button>
       <button
         type="submit"
         class="button"
+        :disabled="isLoading || pizzas.length === 0"
         @click="$emit('confirmOrder')"
       >
         Оформить заказ
@@ -24,14 +34,51 @@
 import { RouteName } from '@/common/constants';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
-const { totalOrderPrice } = storeToRefs(useCartStore());
+const { totalOrderPrice, pizzas } = storeToRefs(useCartStore());
+import { useOrdersStore } from '@/stores/orders.js';
+import router from '@/router/index.js';
+import { onBeforeUnmount, ref } from 'vue';
+const { isOrderRepeat } = storeToRefs(useOrdersStore());
 defineEmits(['confirmOrder']);
+defineProps({
+  isLoading: {
+    type: Boolean,
+    required: true,
+  },
+  errorMessage: {
+    type: String,
+    required: true,
+  },
+});
+const isPressed = ref(false);
+const canselOrder = () => {
+  isPressed.value = true;
+  pizzas.value = [];
+  router.push({ name: RouteName.ORDERS });
+};
+onBeforeUnmount(() => {
+  if (isPressed.value) {
+    isPressed.value = false;
+  }
+});
 </script>
 
 <style scoped lang="scss">
 @use "@/assets/scss/ds-system/ds-colors";
 @use "@/assets/scss/ds-system/ds-typography";
 
+.text-field__error {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  color: red;
+  font-size: 16px;
+  line-height: 14px;
+  font-weight: 400;
+  margin-top: 20px;
+  width: 250px;
+  text-align: center;
+}
 //footer styles
 
 .footer {
@@ -68,9 +115,16 @@ defineEmits(['confirmOrder']);
 }
 
 .footer__submit {
+  display: flex;
+  height: 50px;
+  gap: 10px;
   button {
     padding: 16px 14px;
   }
 }
-
+//button-decline
+.button--decline {
+  width: 100px;
+  background-color: grey;
+}
 </style>

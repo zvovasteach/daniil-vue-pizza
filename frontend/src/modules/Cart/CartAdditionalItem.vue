@@ -2,7 +2,7 @@
   <li class="additional-list__item sheet">
     <p class="additional-list__description">
       <img
-        :src="getImage(`${miscItem.image}.svg`)"
+        :src="getPublicImage(miscItem.image)"
         width="39"
         height="60"
         :alt="miscItem.name"
@@ -15,7 +15,7 @@
         <AppCounter
           :model-value="miscItem.quantity"
           orange
-          @update:model-value="updateAdditionalItem(miscItem.id, $event)"
+          @update:model-value="updateAdditionalItemCount(miscItem.id, $event)"
         />
       </div>
 
@@ -28,17 +28,17 @@
 
 <script setup>
 import AppCounter from '@/common/components/AppCounter.vue';
-import { getImage } from '@/common/helpers';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
 const { misc } = storeToRefs(useCartStore());
+import { getPublicImage } from '@/common/helpers';
 defineProps({
   miscItem: {
     type: Object,
     required: true,
   },
 });
-const updateAdditionalItem = (name, value) => {
+const updateAdditionalItemCount = (name, value) => {
   const newValue = Number(value);
 
   if (newValue < 0) {

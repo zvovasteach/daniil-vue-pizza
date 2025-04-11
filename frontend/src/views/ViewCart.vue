@@ -1,5 +1,6 @@
 <template>
   <form
+    v-if="!isShowPopup"
     action="test.html"
     method="post"
     class="layout-form"
@@ -20,11 +21,17 @@
         <template
           v-else
         >
-          <CartMainItem
-            v-for="pizza in pizzas"
-            :key="pizza.id"
-            :pizza="pizza"
-          />
+          <template
+            v-if="!isDoughLoading || !isSizesLoading ||
+              !isIngredientsLoading || !isSaucesLoading ||
+              !isMiscLoading"
+          >
+            <CartMainItem
+              v-for="pizza in pizzas"
+              :key="pizza.id"
+              :pizza="pizza"
+            />
+          </template>
           <div class="cart__additional">
             <ul class="additional-list">
               <CartAdditionalItem
@@ -42,9 +49,26 @@
       </div>
     </main>
     <CartFooter
+      :is-loading="isLoading"
+      :error-message="errorMessage"
       @confirm-order="createOrder"
     />
   </form>
+  <div
+    v-if="isShowPopup"
+    class="popup"
+  >
+    <a href="#" class="close">
+      <span class="visually-hidden">Закрыть попап</span>
+    </a>
+    <div class="popup__title">
+      <h2 class="title">Спасибо за заказ</h2>
+    </div>
+    <p>Мы начали готовить Ваш заказ, скоро привезём его вам ;)</p>
+    <div class="popup__button">
+      <router-link :to="{ name:RouteName.ORDERS}" class="button">Отлично, я жду!</router-link>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -53,12 +77,19 @@ import CartFooter from '@/modules/Cart/CartFooter.vue';
 import CartForm from '@/modules/Cart/CartForm.vue';
 import CartAdditionalItem from '@/modules/Cart/CartAdditionalItem.vue';
 import CartMainItem from '@/modules/Cart/CartMainItem.vue';
-import { ref, useTemplateRef } from 'vue';
+import { ref, useTemplateRef, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
+import { useUserStore } from '@/stores/user';
+import { orderType, RouteName } from '@/common/constants';
 const { pizzas, misc } = storeToRefs(useCartStore());
-import { orderType } from '@/common/constants';
-
+const { isAuthenticated, user, address } = storeToRefs(useUserStore());
+import { orderApi } from '@/api/order-api.js';
+import router from '@/router/index.js';
+const { isIngredientsLoading, isSizesLoading,
+  isDoughLoading, isSaucesLoading,
+  isMiscLoading } = storeToRefs(useCartStore());
+const isShowPopup = ref(false);
 const formData = ref({
   orderType: orderType.NEW_ADDRESS,
   phone: '',
@@ -69,9 +100,30 @@ const formData = ref({
   },
 },
 );
+watch(
+  () => formData.value.orderType,
+  (order) => {
+    if (order !== orderType.NEW_ADDRESS && order !== orderType.BY_YOURSELF) {
+      const addressKey = Object.entries(address.value)
+        // eslint-disable-next-line no-unused-vars
+        .find(([_, item]) => item.id === order)[0];
+      formData.value.address = {
+        street: address.value[addressKey].street,
+        building: address.value[addressKey].building,
+        flat: address.value[addressKey].flat,
+      };
+    }
+    if (order === orderType.NEW_ADDRESS) {
+      formData.value.address = {
+        street: '',
+        building: '',
+        flat: '',
+      };
+    }
+  });
 const getOrderData = () => {
   const orderData = {
-    userId: 'testId',
+    userId: user.value.id ? user.value.id : '',
     phone: formData.value.phone,
     pizzas: pizzas.value,
     misc: Object.values(misc.value)
@@ -84,12 +136,33 @@ const getOrderData = () => {
   }
   return orderData;
 };
-
+const errorMessage = ref('');
+const isLoading = ref(false);
 const form = useTemplateRef('form');
-const createOrder = () => {
+const createOrder = async () => {
   if (form.value.validate()) {
-    // eslint-disable-next-line no-console
-    console.log(getOrderData());
+    if (!isAuthenticated.value) {
+      await router.push({ name: RouteName.SIGN_IN });
+      return;
+    }
+    isLoading.value = true;
+    try {
+      errorMessage.value = '';
+      Object.values(pizzas.value).map((pizza) => delete pizza.id);
+      const order = getOrderData();
+      await orderApi.postOrderInfo(order);
+    } catch (error) {
+      errorMessage.value = 'При оформлении заказа произошла ошибка';
+      // eslint-disable-next-line no-console
+      console.log(error);
+    } finally {
+      isLoading.value = false;
+    }
+    if (!errorMessage.value) {
+      isShowPopup.value = true;
+      pizzas.value = [];
+      isLoading.value = false;
+    }
   }
 };
 </script>
@@ -364,6 +437,68 @@ const createOrder = () => {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+.popup {
+  @include m_center.pf_center-all;
+
+  z-index: 10;
+
+  display: block;
+
+  box-sizing: border-box;
+  width: 420px;
+  padding: 64px 95px;
+
+  background-color: ds-colors.$white;
+  box-shadow: ds-shadows.$shadow-light;
+
+  &::before,
+  &::after {
+    position: absolute;
+
+    width: 48px;
+    height: 48px;
+
+    content: "";
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
+  &::before {
+    top: 15px;
+    left: 15px;
+
+    background-image: url("@/assets/img/filling/ananas.svg");
+  }
+
+  &::after {
+    right: 15px;
+    bottom: 15px;
+
+    background-image: url("@/assets/img/filling/tomatoes.svg");
+  }
+
+  p {
+    margin-top: 24px;
+    margin-bottom: 24px;
+
+    text-align: center;
+  }
+}
+
+.popup__title {
+  text-align: center;
+
+  font-size: 1.3em;
+}
+
+.popup__button {
+  a {
+    padding: 16px 32px;
+  }
 }
 
 </style>

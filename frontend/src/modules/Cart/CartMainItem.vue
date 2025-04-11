@@ -63,8 +63,11 @@ import { useCartStore } from '@/stores/cart';
 import { calculatePizzaPrice } from '@/common/helpers';
 import router from '@/router';
 import { RouteName } from '@/common/constants';
+import { computed } from 'vue';
 
-const { pizzaParts, editingPizzaId, pizzas } = storeToRefs(useCartStore());
+const { pizzaParts, editingPizzaId, pizzas, isIngredientsLoading,
+  isMiscLoading, isSaucesLoading, isSizesLoading,
+  isDoughLoading } = storeToRefs(useCartStore());
 
 const props = defineProps({
   pizza: {
@@ -72,7 +75,15 @@ const props = defineProps({
     required: true,
   },
 });
-const pizzaPrice = calculatePizzaPrice(props.pizza, pizzaParts.value);
+const pizzaPrice = computed (() => {
+  if (isIngredientsLoading.value || isSaucesLoading.value
+    || isSizesLoading.value || isDoughLoading.value
+    || isMiscLoading.value) {
+    return 0;
+  }
+  return calculatePizzaPrice(props.pizza, pizzaParts.value);
+});
+
 const editPizza = (pizza) => {
   editingPizzaId.value = pizza.id;
   router.push({ name: RouteName.HOME });

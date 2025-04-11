@@ -15,7 +15,25 @@
         {{ totalOrderPrice }} ₽
       </router-link>
     </div>
-    <div class="header__user">
+    <div v-if="isAuthenticated" class="header__user">
+      <router-link :to="{ name: RouteName.USER_DATA }">
+        <picture v-if="!isLoading">
+          <source
+            type="image/webp"
+            :srcset="userImage"
+          />
+          <img
+            :src="userImage"
+            :alt="user?.name"
+            width="32"
+            height="32"
+          />
+        </picture>
+        <span>{{ user?.name }}</span>
+      </router-link>
+      <a href="#" class="header__logout" @click="logout"><span>Выйти</span></a>
+    </div>
+    <div v-else class="header__user">
       <router-link :to="{ name: RouteName.SIGN_IN}" class="header__login"><span>Войти</span></router-link>
     </div>
   </header>
@@ -25,7 +43,30 @@
 import { RouteName } from '@/common/constants';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/stores/cart';
+import { useUserStore } from '@/stores/user.js';
+import { getPublicImage } from '@/common/helpers.js';
+import { useRoute } from 'vue-router';
+import router from '@/router/index.js';
+import { removeToken } from '@/api/token-manager.js';
+import { computed } from 'vue';
+const { $resetUserStore } = useUserStore();
 const { totalOrderPrice } = storeToRefs(useCartStore());
+const { user, isAuthenticated, isLoading } = storeToRefs(useUserStore());
+
+const userImage = computed(() => user.value?.avatar ? getPublicImage(user.value?.avatar) : '');
+
+const route = useRoute();
+const logout = () => {
+  // eslint-disable-next-line no-console
+  console.log(route);
+  removeToken();
+  $resetUserStore();
+  if (route.meta.public === true) {
+    router.push({ path: route.path });
+  } else {
+    router.push({ name: RouteName.SIGN_IN });
+  }
+};
 </script>
 
 <style scoped lang="scss">

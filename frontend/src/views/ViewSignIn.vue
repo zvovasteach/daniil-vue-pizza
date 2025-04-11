@@ -29,11 +29,13 @@
           :error="validations.password.error"
           required
         />
+        <span v-if="errorMessage" class="text-field__error">{{ errorMessage }}</span>
       </div>
       <button
         type="submit"
+        :disabled="isLoading || !loginData.email || !loginData.password || isError"
         class="button"
-        @click.prevent="validateLogin"
+        @click.prevent="authorizeUser"
       >
         Авторизоваться
       </button>
@@ -43,9 +45,13 @@
 
 <script setup>
 import AppInput from '@/common/components/AppInput.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { validateFields } from '@/common/validator';
 import { RouteName } from '@/common/constants';
+import { useUserStore } from '@/stores/user';
+const { getUserToken } = useUserStore();
+import router from '@/router/index.js';
+
 const validations = ref({
   email: {
     error: '',
@@ -61,7 +67,13 @@ const loginData = ref({
   password: '',
 },
 );
-const validateLogin = () => {
+const isLoading = ref(false);
+const errorMessage = ref('');
+const isError = ref(false);
+watch(loginData, () => {
+  isError.value = false;
+}, { deep: true });
+const authorizeUser = async () => {
   if (validateFields({
     email: loginData.value.email,
     password: loginData.value.password,
@@ -70,8 +82,22 @@ const validateLogin = () => {
     email: validations.value.email,
     password: validations.value.password,
   })) {
-    // eslint-disable-next-line no-console
-    console.log(loginData.value);
+    try {
+      isLoading.value = true;
+      await getUserToken(loginData.value.email, loginData.value.password);
+      // eslint-disable-next-line no-console
+      console.log(loginData.value);
+      await router.push({ name: RouteName.HOME });
+    } catch (error) {
+      if (error.response.status === 400) {
+        isError.value = true;
+        errorMessage.value = 'Логин или пароль введены неверно';
+      } else {
+        errorMessage.value = 'Что-то пошло не так';
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 };
 </script>
@@ -346,6 +372,14 @@ const validateLogin = () => {
     background-color: ds-colors.$white;
     color: ds-colors.$green-500;
   }
+}
+.text-field__error {
+  color: red;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  position: absolute;
+  width: 230px;
 }
 
 </style>
